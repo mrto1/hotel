@@ -1,0 +1,58 @@
+# Hotel-Direktbuchung
+
+Buchungsmaschine für kleine Hotels: eigene Website mit Direktbuchung, Zahlung über Stripe Connect (TWINT, Karte, Apple Pay, Google Pay) direkt aufs Konto des Hotels, 1 % Plattformgebühr. Abgleich mit Booking.com & Co. über Channex folgt in M3.
+
+Auftrag und Details: [`docs/SPEC.md`](docs/SPEC.md) · Offene Fragen und Annahmen: [`QUESTIONS.md`](QUESTIONS.md) · Regeln für KI-Agenten: [`CLAUDE.md`](CLAUDE.md)
+
+## Stand
+
+| Meilenstein | Stand |
+| --- | --- |
+| **M1 Kern** | fertig: Schema, Suche, Preise, Kurtaxe nach Gemeinde, Hold (30+2 Min.), Ablauf, Storno, Zustandsautomat, Buchungsseiten DE/EN mit Fake-Zahlung. Alle Abnahmetests grün. |
+| **M2 Stripe und Admin** | Code fertig und mit gemocktem Stripe getestet: Onboarding (Connect, Direct Charges), Checkout mit 1 % Application Fee, Webhooks, Rückerstattung, Magic-Link-Login, Kalender, Buchungen, Einstellungen, E-Mails. **Aktivieren mit eigenen Stripe-Testschlüsseln** (siehe unten). Monatsabrechnung fehlt noch. |
+| M3 Channex | offen (Outbox-Einträge und Webhook-Signaturprüfung sind schon da) |
+| M4 Modul Gäste | offen |
+
+## Lokal starten
+
+Voraussetzungen: Node 22, PostgreSQL 16 (oder `docker compose up -d db`).
+
+```bash
+npm install
+cp .env.example .env.local          # DATABASE_URL, AUTH_SECRET setzen
+npm run db:reset                     # Migrationen + Demo-Hotel "Demo Gasthof" (Glarus)
+npm run dev                          # http://localhost:3000
+npm run worker                       # zweites Terminal: Holds freigeben, E-Mails senden
+```
+
+- Hotel-Website: http://demo-gasthof.localhost:3000 (Hotel wird über die Domain erkannt) oder Vorschau http://localhost:3000/h/demo-gasthof/de
+- Admin: http://localhost:3000/admin/login mit `admin@example.ch`. Ohne `POSTMARK_SERVER_TOKEN` erscheint der Login-Link direkt auf der Seite und E-Mails werden im Worker-Terminal ausgegeben.
+- Mit `PAYMENT_PROVIDER=fake` wird jede Buchung sofort bestätigt (ohne Zahlung).
+
+## Tests
+
+```bash
+createdb hotel_test                  # einmalig; oder TEST_DATABASE_URL setzen
+npm test                             # Unit + Integration gegen echte Postgres-DB (66 Tests)
+npm run test:e2e                     # Playwright: suchen, buchen, stornieren (Dev-Server muss laufen oder wird gestartet)
+```
+
+Abnahmetests (SPEC 12): `tests/unit/pricing.test.ts` (Preis-Testfälle 5.2), `tests/integration/m1-booking.test.ts` (20 parallele Holds, Ablauf, Suchregeln, Mandantentrennung), `tests/integration/m2-stripe.test.ts` (Direct Charge + Gebühr, doppelter Webhook, Storno vor/nach Frist, Session abgelaufen, Kalender → Outbox + Audit), `tests/integration/m2-admin.test.ts` (Login, Rollen, Kurtaxe bestätigen, E-Mails).
+
+## Stripe aktivieren (M2, Testmodus)
+
+1. Stripe-Konto anlegen, **Connect** aktivieren (Plattform-Profil ausfüllen), Testmodus.
+2. `.env.local`: `PAYMENT_PROVIDER=stripe`, `STRIPE_SECRET_KEY=sk_test_...`
+3. Webhook für **verbundene Konten** einrichten. Lokal am einfachsten mit der Stripe CLI:
+   ```bash
+   stripe listen --forward-connect-to localhost:3000/api/webhooks/stripe
+   ```
+   Das angezeigte `whsec_...` als `STRIPE_WEBHOOK_SECRET_CONNECT` eintragen. Ereignisse: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`, `charge.dispute.created`, `account.updated`.
+4. Admin → Einstellungen → „Stripe-Konto einrichten“ → Test-Onboarding durchklicken → zurück → „Status neu laden“. Danach kann das Hotel live geschaltet werden.
+5. Buchen mit Testkarte `4242 4242 4242 4242`. TWINT muss im Stripe-Dashboard freigeschaltet sein.
+
+## Betrieb
+
+- `Dockerfile` (Next.js standalone) und `docker-compose.yml` (DB, App, Worker). Hosting mit Daten in der Schweiz oder EU.
+- Migrationen: `npm run db:migrate` (wendet `db/migrations/*.sql` an).
+- Die Domain eines Hotels (`hotels.primary_domain`, z. B. `www.hotel1.ch`) per DNS auf den Server zeigen lassen; die Seite erkennt das Hotel am Host.

@@ -1,0 +1,31 @@
+# Offene Fragen und getroffene Annahmen
+
+Annahmen sind im Code mit `// ASSUMPTION:` markiert (`grep -rn "ASSUMPTION" src app`).
+
+## Offene Fragen (aus SPEC 15)
+
+- [ ] Channex: Produktions-URL und Preise für Staging/Produktion.
+- [ ] Channex-Webhook: Format von `x-hmac-signature-256` (Hex?) und `x-hmac-timestamp` (Sekunden?) gegen die Doku prüfen (`src/integrations/channex/signature.ts`).
+- [ ] Kurtaxe: Zeilen mit `status='needs_confirmation'` (Wildhaus-Alt St. Johann, Speicher, Hundwil) und AI-Satz (2.50 laut Verordnung, 2.70 laut Drittquelle). Hotels können den Satz im Admin bestätigen.
+- [ ] AVS-Schnittstelle (Format, Zugang, Kosten) für Meldeschein, Kurtaxe und HESTA.
+- [ ] Gästemeldung Appenzell Innerrhoden.
+- [ ] Hotels mit eigenem Channel-Manager (z. B. Hotel-Spider) statt Channex.
+- [ ] Rechtstexte (AGB Gäste, Vertrag Hotel, Datenschutzerklärung) – liefert der Betreiber. Der Buchungsablauf verlangt bereits die AGB-Bestätigung, verlinkt aber noch keine Seite.
+- [ ] Stripe/TWINT: Branchencode (MCC) für Hotels – TWINT ist für einzelne Branchen eingeschränkt. Mit Stripe klären, bevor das erste Hotel live geht.
+
+## Getroffene Annahmen (v1)
+
+| Thema | Annahme | Ort |
+| --- | --- | --- |
+| Hold-Dauer | 32 statt 30 Minuten, weil Stripe `expires_at` mindestens 30 Minuten nach Erstellung der Session verlangt | `src/services/bookings.ts` |
+| Stripe-Webhooks | Verarbeitung direkt im Request; bei Fehler 500 → Stripe wiederholt; unverarbeitete Ereignisse werden erneut verarbeitet | `src/integrations/stripe/webhooks.ts` |
+| TWINT ausblenden | `excluded_payment_method_types: ['twint']`, wenn TWINT nicht aktiv oder Betrag > CHF 5'000 | `src/integrations/stripe/provider.ts` |
+| Login | Eigene Magic-Link-Implementierung, Tabelle `login_tokens` (nur Hash), signiertes Cookie (30 Tage) | `src/auth/session.ts`, Migration 0002 |
+| Website-Texte | Neue Spalte `hotels.content` (DE/EN, Fotos) | Migration 0002 |
+| Kinderalter | Neue Spalte `bookings.children_ages`; Pflicht, wenn die Kurtaxe-Regel Altersgrenzen hat | Migration 0002, `src/services/search.ts` |
+| Überbuchung | Neue Spalte `bookings.overbooked` (für M3) | Migration 0002 |
+| Rate-Limit | Im Speicher pro Instanz (10 POST/Minute/IP) | `src/lib/rate-limit.ts` |
+| E-Mail-Templates | HTML in TypeScript statt React Email (keine Zusatzabhängigkeit) | `src/email/templates.ts` |
+| Neue Tage im Horizont | Preis/Regeln vom gleichen Wochentag eine Woche vorher | `src/services/inventory.ts` |
+| Zimmer sperren | `blocked` wird auf `total` begrenzt | `src/services/inventory.ts` |
+| Stornierung durch Gast | Nur bis zum Anreisetag; danach nur durch das Hotel | `src/services/bookings.ts` |

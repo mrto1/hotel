@@ -83,3 +83,30 @@ details > summary::-webkit-details-marker { display: none; }
   .offer { grid-template-columns: 1fr; }
   .price { text-align: left; }
 }
+
+/* ---------- Admin ---------- */
+.admin-head { background: var(--surface); border-bottom: 1px solid var(--line); }
+.admin-head .wrap { display: flex; align-items: center; gap: 20px; height: 56px; overflow-x: auto; }
+.admin-head nav a { color: var(--muted); text-decoration: none; margin-right: 14px; white-space: nowrap; }
+.admin-head nav a.active { color: var(--ink); font-weight: 600; }
+.admin-main { padding: 24px 0 64px; }
+.table { width: 100%; border-collapse: collapse; background: var(--surface); }
+.table th, .table td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; font-size: .9rem; vertical-align: top; }
+.table th { color: var(--muted); font-weight: 600; font-size: .8rem; }
+.table tr.over td { background: var(--warn-soft); }
+.scroll-x { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.cal { border-collapse: separate; border-spacing: 0; font-size: .78rem; }
+.cal th, .cal td { padding: 4px 6px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); text-align: center; white-space: nowrap; background: var(--surface); }
+.cal th.sticky, .cal td.sticky { position: sticky; left: 0; z-index: 1; text-align: left; min-width: 170px; font-weight: 600; }
+.cal .we { background: var(--accent-soft); }
+.cal .full { color: var(--danger); font-weight: 700; }
+.cal .blk { color: var(--warn); }
+.cal .ss { text-decoration: line-through; color: var(--muted); }
+.cal .tag { display: block; font-size: .65rem; color: var(--warn); }
+.inline-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.inline-form > div { min-width: 120px; }
+.weekdays { display: flex; gap: 6px; flex-wrap: wrap; }
+.weekdays label { display: flex; align-items: center; margin: 0; color: var(--ink); }
+.stack > * + * { margin-top: 16px; }
+.kv { display: grid; grid-template-columns: 180px 1fr; gap: 6px 16px; }
+@media (max-width: 600px) { .kv { grid-template-columns: 1fr; } }
