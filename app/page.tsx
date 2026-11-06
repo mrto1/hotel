@@ -1,35 +1,45 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { db } from "@/src/db/client";
 import { hotels } from "@/src/db/schema";
 import { getHotelByHost } from "@/src/services/hotels";
 import { env } from "@/src/env";
+import { PontivoHome } from "@/components/marketing/PontivoHome";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const name = env().PLATFORM_NAME;
+  return {
+    title: `${name} – Direktbuchung für Hotels`,
+    description: `Website mit Online-Buchung, TWINT und Abgleich mit Booking.com für kleine Hotels in der Schweiz. ${name} kostet 1 % pro Direktbuchung.`,
+  };
+}
+
 export default async function Root() {
+  // Domain eines Hotels → dessen Website. Sonst: Website der Plattform.
   const hotel = await getHotelByHost((await headers()).get("host"));
   if (hotel) redirect(`/${hotel.defaultLanguage}`);
-  // Plattform-Startseite. In der Entwicklung: Liste der Hotels zur Vorschau.
-  const list = env().NODE_ENV === "production" ? [] : await db().select().from(hotels).orderBy(hotels.name);
+  const e = env();
+  // ASSUMPTION: Das Demo-Hotel (Slug DEMO_HOTEL_SLUG) wird als Beispiel verlinkt, wenn es existiert und live ist.
+  const [demo] = await db().select().from(hotels).where(eq(hotels.slug, e.DEMO_HOTEL_SLUG));
+  const list = e.NODE_ENV === "production" ? [] : await db().select().from(hotels).orderBy(hotels.name);
   return (
-    <main className="wrap" style={{ padding: "48px 16px" }}>
-      <h1>{env().PLATFORM_NAME}</h1>
-      <h2 style={{ fontWeight: 400 }}>Direktbuchung für Hotels</h2>
-      <p className="muted">Website, Buchungsmaschine und Channel-Abgleich für kleine Hotels. 1 % pro Buchung.</p>
+    <PontivoHome
+      contact={{
+        name: e.PLATFORM_NAME,
+        email: e.PLATFORM_CONTACT_EMAIL,
+        phone: e.PLATFORM_PHONE,
+        demoUrl: demo?.status === "live" ? `/h/${demo.slug}/de` : undefined,
+      }}
+    >
       {list.length ? (
-        <section className="card" style={{ marginTop: 24 }}>
-          <h2>Vorschau (nur Entwicklung)</h2>
-          <ul>
-            {list.map((h) => (
-              <li key={h.id}>
-                <a href={`/h/${h.slug}/de`}>{h.name}</a> <span className="muted small">({h.status}{h.primaryDomain ? `, ${h.primaryDomain}` : ""})</span>
-              </li>
-            ))}
-          </ul>
-          <p><a href="/admin">Zum Admin</a></p>
-        </section>
+        <p>
+          Entwicklung: {list.map((h, i) => <span key={h.id}>{i ? " · " : ""}<a href={`/h/${h.slug}/de`}>{h.name}</a></span>)} · <a href="/admin">Admin</a>
+        </p>
       ) : null}
-    </main>
+    </PontivoHome>
   );
 }

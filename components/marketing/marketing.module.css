@@ -1,0 +1,136 @@
+/* Pontivo – Plattform-Website. Eigene Tokens, unabhängig von den Hotel-Seiten. */
+.page {
+  --pv-paper: #eef2f1;      /* Gletschermilch: Grund */
+  --pv-ink: #13262e;        /* Schiefer: Text */
+  --pv-quiet: #4d5f66;      /* Nebentext */
+  --pv-line: #c9d3d1;       /* Linien */
+  --pv-keep: #0b6a7a;       /* Linth-Blau: was beim Hotel bleibt */
+  --pv-fee: #8a2e57;        /* Provision der Portale */
+  --pv-white: #ffffff;
+  background: var(--pv-paper);
+  color: var(--pv-ink);
+  font-family: var(--pv-body), system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+@media (prefers-color-scheme: dark) {
+  .page {
+    --pv-paper: #0f1d22;
+    --pv-ink: #e8eff0;
+    --pv-quiet: #a6b6ba;
+    --pv-line: #2a3d44;
+    --pv-keep: #5cc3d3;
+    --pv-fee: #e07aa5;
+    --pv-white: #16272d;
+  }
+}
+.page a { color: var(--pv-keep); }
+.page :focus-visible { outline: 3px solid var(--pv-keep); outline-offset: 3px; border-radius: 4px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+.head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 0; }
+.logo { font-family: var(--pv-display), sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.02em; color: var(--pv-ink); text-decoration: none; display: inline-flex; align-items: center; gap: 10px; }
+.logo svg { width: 34px; height: 20px; }
+.headLinks { display: flex; gap: 22px; align-items: center; font-size: 1rem; }
+.headLinks a { color: var(--pv-ink); text-decoration: none; }
+.headLinks a:hover { text-decoration: underline; }
+
+.btn { display: inline-block; background: var(--pv-keep); color: #fff !important; text-decoration: none; font-weight: 700; padding: 12px 20px; border-radius: 999px; border: 0; font: inherit; font-weight: 700; cursor: pointer; }
+.btn:hover { filter: brightness(1.08); }
+.btnGhost { display: inline-block; color: var(--pv-ink) !important; text-decoration: none; font-weight: 700; padding: 11px 19px; border-radius: 999px; border: 1.5px solid var(--pv-ink); }
+
+/* ---------- Hero ---------- */
+.hero { display: grid; grid-template-columns: 1fr minmax(380px, 460px); gap: 56px; align-items: center; padding: 48px 0 72px; }
+.heroTitle { font-family: var(--pv-display), sans-serif; font-weight: 800; font-size: clamp(2.4rem, 5.2vw, 4.1rem); line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 22px; font-variation-settings: "wdth" 85; }
+.heroLead { font-size: 1.2rem; color: var(--pv-quiet); max-width: 42ch; margin: 0 0 30px; }
+.heroActions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.receipt { background: var(--pv-white); border-radius: 18px; padding: 28px; box-shadow: 0 1px 0 var(--pv-line), 0 18px 40px -24px rgba(19, 38, 46, 0.35); }
+.receiptHead { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }
+.receiptTitle { font-weight: 700; white-space: nowrap; }
+.receiptSum { white-space: nowrap; font-family: var(--pv-display), sans-serif; font-weight: 700; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.row { margin-bottom: 22px; }
+.rowLabel { display: flex; justify-content: space-between; gap: 12px; font-size: 0.95rem; margin-bottom: 8px; }
+.rowLabel span:last-child { white-space: nowrap; }
+.rowLabel strong { font-variant-numeric: tabular-nums; }
+.bar { display: flex; height: 44px; border-radius: 10px; overflow: hidden; background: var(--pv-paper); }
+.keep { background: var(--pv-keep); }
+.fee { background: var(--pv-fee); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+.legend { display: flex; gap: 18px; font-size: 0.85rem; color: var(--pv-quiet); flex-wrap: wrap; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+.receiptNote { font-size: 0.85rem; color: var(--pv-quiet); margin: 14px 0 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .grow { animation: grow 900ms cubic-bezier(.2,.7,.2,1) both; animation-delay: 250ms; transform-origin: right; }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
+/* ---------- Abschnitte ---------- */
+.section { padding: 72px 0; border-top: 1px solid var(--pv-line); }
+.h2 { font-family: var(--pv-display), sans-serif; font-weight: 800; font-size: clamp(1.8rem, 3.4vw, 2.6rem); letter-spacing: -0.03em; line-height: 1.08; margin: 0 0 16px; max-width: 22ch; }
+.intro { color: var(--pv-quiet); max-width: 60ch; margin: 0 0 40px; }
+
+.steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; counter-reset: step; }
+.steps li { counter-increment: step; position: relative; padding-top: 58px; }
+.steps li::before { content: counter(step); position: absolute; top: 0; left: 0; font-family: var(--pv-display), sans-serif; font-weight: 800; font-size: 2.6rem; line-height: 1; color: var(--pv-keep); }
+.steps h3 { margin: 0 0 8px; font-size: 1.2rem; }
+.steps p { margin: 0; color: var(--pv-quiet); }
+
+.benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; margin: 0; }
+.benefit { padding: 22px 0; border-bottom: 1px solid var(--pv-line); }
+.benefit dt { font-weight: 700; font-size: 1.15rem; margin-bottom: 4px; }
+.benefit dd { margin: 0; color: var(--pv-quiet); }
+
+/* ---------- Rechner ---------- */
+.calc { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; background: var(--pv-white); border-radius: 18px; padding: 36px; }
+.field { margin-bottom: 26px; }
+.field label { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; margin-bottom: 8px; }
+.field output { font-variant-numeric: tabular-nums; color: var(--pv-keep); }
+.field input[type="range"] { width: 100%; accent-color: var(--pv-keep); }
+.fieldHint { font-size: 0.85rem; color: var(--pv-quiet); margin-top: 4px; }
+.result { border-left: 4px solid var(--pv-keep); padding-left: 24px; }
+.resultBig { font-family: var(--pv-display), sans-serif; font-weight: 800; font-size: clamp(2.4rem, 5vw, 3.6rem); letter-spacing: -0.03em; line-height: 1; margin: 6px 0 10px; color: var(--pv-keep); font-variant-numeric: tabular-nums; }
+.resultRows { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 0.95rem; }
+.resultRows td { padding: 8px 0; border-bottom: 1px solid var(--pv-line); }
+.resultRows td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------- Preis ---------- */
+.price { display: grid; grid-template-columns: auto 1fr; gap: 48px; align-items: center; }
+.priceFig { font-family: var(--pv-display), sans-serif; font-weight: 800; font-size: clamp(5rem, 13vw, 9rem); line-height: 0.9; letter-spacing: -0.05em; color: var(--pv-keep); }
+.priceList { margin: 0; padding-left: 1.1em; }
+.priceList li { margin-bottom: 8px; }
+
+/* ---------- FAQ ---------- */
+.faq details { border-bottom: 1px solid var(--pv-line); padding: 18px 0; }
+.faq summary { cursor: pointer; font-weight: 700; font-size: 1.1rem; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-size: 1.4rem; line-height: 1; color: var(--pv-keep); }
+.faq details[open] summary::after { content: "–"; }
+.faq p { margin: 10px 0 0; color: var(--pv-quiet); max-width: 68ch; }
+
+/* ---------- Kontakt ---------- */
+.contact { background: var(--pv-ink); color: var(--pv-paper); border-radius: 22px; padding: 56px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+.contact .h2 { color: var(--pv-paper); }
+.contact p { color: var(--pv-paper); opacity: 0.85; }
+.contactLinks { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.contactLinks a:not(.btn) { color: var(--pv-paper); }
+@media (prefers-color-scheme: dark) {
+  .contact { background: #1d343c; }
+}
+
+.foot { padding: 40px 0 56px; color: var(--pv-quiet); font-size: 0.9rem; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.dev { margin-top: 12px; font-size: 0.85rem; }
+
+@media (max-width: 860px) {
+  .hero, .calc, .price, .contact { grid-template-columns: minmax(0, 1fr); }
+  .headLinks .btn { padding: 9px 14px; font-size: 0.9rem; white-space: nowrap; }
+  .receipt { padding: 20px; }
+  .rowLabel { flex-direction: column; gap: 2px; }
+  .receiptHead { flex-direction: column; gap: 2px; }
+  .hero { gap: 36px; padding-top: 24px; }
+  .steps { grid-template-columns: 1fr; gap: 28px; }
+  .benefits { grid-template-columns: 1fr; }
+  .headLinks a:not(.btn) { display: none; }
+  .calc, .contact { padding: 26px; }
+  .section { padding: 56px 0; }
+}
