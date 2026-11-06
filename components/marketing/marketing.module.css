@@ -81,6 +81,16 @@
 .benefit dt { font-weight: 700; font-size: 1.15rem; margin-bottom: 4px; }
 .benefit dd { margin: 0; color: var(--pv-quiet); }
 
+/* ---------- Drei Wege ---------- */
+.paths { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 20px; align-items: stretch; }
+.path { border: 1.5px solid var(--pv-line); border-radius: 16px; padding: 26px; }
+.path h3 { margin: 0 0 10px; font-size: 1.2rem; line-height: 1.25; }
+.path p { margin: 0; color: var(--pv-quiet); }
+.path ul { margin: 16px 0 0; padding-left: 1.1em; }
+.path li { margin-bottom: 6px; }
+.pathMain { background: var(--pv-white); border-color: var(--pv-keep); border-width: 2px; }
+.pathMain h3 { font-family: var(--pv-display), sans-serif; font-size: 1.5rem; letter-spacing: -0.02em; }
+
 /* ---------- Rechner ---------- */
 .calc { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; background: var(--pv-white); border-radius: 18px; padding: 36px; }
 .field { margin-bottom: 26px; }
@@ -130,6 +140,7 @@
   .hero { gap: 36px; padding-top: 24px; }
   .steps { grid-template-columns: 1fr; gap: 28px; }
   .benefits { grid-template-columns: 1fr; }
+  .paths { grid-template-columns: 1fr; }
   .headLinks a:not(.btn) { display: none; }
   .calc, .contact { padding: 26px; }
   .section { padding: 56px 0; }

@@ -37,6 +37,7 @@ export function PontivoHome({ contact, children }: { contact: Contact; children?
         <header className={s.head}>
           <a className={s.logo} href="/"><Logo />{contact.name}</a>
           <nav className={s.headLinks} aria-label="Hauptnavigation">
+            <a href="#wege">Angebot</a>
             <a href="#ablauf">Ablauf</a>
             <a href="#rechner">Rechner</a>
             <a href="#preis">Preis</a>
@@ -49,7 +50,7 @@ export function PontivoHome({ contact, children }: { contact: Contact; children?
           <div>
             <h1 className={s.heroTitle}>Ihre Gäste buchen direkt bei Ihnen. Die Provision bleibt im Haus.</h1>
             <p className={s.heroLead}>
-              {contact.name} gibt Ihrem Hotel eine Website mit Online-Buchung, TWINT und Kartenzahlung. Booking.com läuft weiter und wird automatisch abgeglichen. Sie zahlen {FEE_PERCENT} % pro Direktbuchung, sonst nichts.
+              {contact.name} bringt Online-Buchung mit TWINT und Kartenzahlung auf Ihre bestehende Website – oder gibt Ihnen eine neue. Booking.com läuft weiter und wird automatisch abgeglichen. Sie zahlen {FEE_PERCENT} % pro Direktbuchung, sonst nichts.
             </p>
             <div className={s.heroActions}>
               <a className={s.btn} href={mail}>Gespräch vereinbaren</a>
@@ -84,6 +85,30 @@ export function PontivoHome({ contact, children }: { contact: Contact; children?
           </figure>
         </section>
 
+        <section className={s.section} id="wege">
+          <h2 className={s.h2}>Passend zu Ihrer heutigen Website</h2>
+          <p className={s.intro}>Sie entscheiden, wie viel {contact.name} übernimmt. Buchung, Zahlung und der Abgleich mit Booking.com sind bei allen drei Wegen gleich.</p>
+          <div className={s.paths}>
+            <article className={`${s.path} ${s.pathMain}`}>
+              <h3>Ihre Website bleibt, die Buchung kommt von uns</h3>
+              <p>Auf Ihrer Website erscheint ein Knopf «Jetzt buchen» oder eine Suchleiste mit Daten und Personen. Die Buchungsseite trägt Ihr Logo und Ihre Farben.</p>
+              <ul>
+                <li>Funktioniert mit Wix, WordPress, Jimdo und jeder anderen Website</li>
+                <li>Einfachste Variante: den bestehenden «Buchen»-Link umstellen</li>
+                <li>Kein Relaunch, keine neue Agentur</li>
+              </ul>
+            </article>
+            <article className={s.path}>
+              <h3>Neue Website mit Buchung</h3>
+              <p>Für Hotels ohne Online-Buchung oder mit veralteter Seite: Startseite, Zimmer mit Fotos und Buchung auf Deutsch und Englisch, unter Ihrer Domain.</p>
+            </article>
+            <article className={s.path}>
+              <h3>Wechsel von Ihrer heutigen Buchungsmaschine</h3>
+              <p>Statt einer festen Monatsgebühr zahlen Sie nur bei einer Buchung. Dazu TWINT, Abgleich mit Booking.com und alles an einem Ort.</p>
+            </article>
+          </div>
+        </section>
+
         <section className={s.section} id="ablauf">
           <h2 className={s.h2}>In drei Schritten zur eigenen Direktbuchung</h2>
           <p className={s.intro}>Sie müssen nichts installieren und keine neue Software lernen. Wir richten alles ein und bleiben Ihr Ansprechpartner.</p>
@@ -94,11 +119,11 @@ export function PontivoHome({ contact, children }: { contact: Contact; children?
             </li>
             <li>
               <h3>Wir richten ein</h3>
-              <p>Zimmer, Preise, Fotos, Texte auf Deutsch und Englisch, Zahlungskonto und Abgleich mit Booking.com. Ihre Domain bleibt Ihre Domain.</p>
+              <p>Zimmer, Preise, Fotos, Zahlungskonto und Abgleich mit Booking.com – und je nach Weg den Buchungs-Knopf auf Ihrer Website oder die neue Website.</p>
             </li>
             <li>
               <h3>Gäste buchen direkt</h3>
-              <p>Wer Sie auf Google findet, bucht auf Ihrer Website und bezahlt sofort. Das Geld kommt direkt auf Ihr Konto.</p>
+              <p>Wer Sie auf Google oder Ihrer Website findet, bucht direkt bei Ihnen und bezahlt sofort. Das Geld kommt direkt auf Ihr Konto.</p>
             </li>
           </ol>
         </section>
@@ -151,10 +176,14 @@ export function PontivoHome({ contact, children }: { contact: Contact; children?
           </details>
           <details>
             <summary>Was passiert mit meiner bestehenden Website?</summary>
-            <p>Wir übernehmen Ihre Inhalte und Fotos in die neue Seite unter Ihrer bisherigen Domain. Wenn Sie Ihre Website behalten möchten, kann der Buchungsteil auch verlinkt werden.</p>
+            <p>Sie bleibt, wenn Sie möchten. Wir fügen nur einen Buchungs-Knopf oder eine Suchleiste ein, oder Sie stellen Ihren bestehenden «Buchen»-Link um. Wünschen Sie eine neue Website, übernehmen wir Ihre Inhalte und Fotos unter Ihrer bisherigen Domain.</p>
           </details>
           <details>
-            <summary>Ich habe schon eine Hotelsoftware. Geht das trotzdem?</summary>
+            <summary>Ich habe schon eine Buchungsmaschine. Lohnt sich ein Wechsel?</summary>
+            <p>Das hängt davon ab, was Sie heute zahlen und wie viele Direktbuchungen Sie haben. Wir rechnen es im ersten Gespräch mit Ihren Zahlen durch – mit {contact.name} zahlen Sie nur, wenn tatsächlich gebucht wird.</p>
+          </details>
+          <details>
+            <summary>Ich habe schon eine Hotelsoftware oder einen Channel-Manager. Geht das trotzdem?</summary>
             <p>In vielen Fällen ja. Wir prüfen im ersten Gespräch, wie Ihre Software angebunden werden kann.</p>
           </details>
           <details>
