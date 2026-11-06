@@ -42,7 +42,7 @@ h3 { font-size: 1.1rem; }
 .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
 .site-head { border-bottom: 1px solid var(--line); background: var(--surface); }
 .site-head .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; gap: 12px; }
-.brand { font-family: var(--serif); font-size: 1.3rem; font-weight: 600; color: var(--ink); text-decoration: none; }
+.brand { font-family: var(--serif); font-size: 1.3rem; font-weight: 600; color: var(--ink); text-decoration: none; white-space: nowrap; }
 .lang a { margin-left: 10px; font-size: .9rem; color: var(--muted); text-decoration: none; }
 .lang a[aria-current="true"] { color: var(--ink); font-weight: 600; }
 .hero { padding: 48px 0 24px; }

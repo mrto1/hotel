@@ -1,4 +1,4 @@
-# Hotel-Direktbuchung
+# Pontivo – Direktbuchung für Hotels
 
 Buchungsmaschine für kleine Hotels: eigene Website mit Direktbuchung, Zahlung über Stripe Connect (TWINT, Karte, Apple Pay, Google Pay) direkt aufs Konto des Hotels, 1 % Plattformgebühr. Abgleich mit Booking.com & Co. über Channex folgt in M3.
 
@@ -9,8 +9,9 @@ Auftrag und Details: [`docs/SPEC.md`](docs/SPEC.md) · Offene Fragen und Annahme
 | Meilenstein | Stand |
 | --- | --- |
 | **M1 Kern** | fertig: Schema, Suche, Preise, Kurtaxe nach Gemeinde, Hold (30+2 Min.), Ablauf, Storno, Zustandsautomat, Buchungsseiten DE/EN mit Fake-Zahlung. Alle Abnahmetests grün. |
-| **M2 Stripe und Admin** | Code fertig und mit gemocktem Stripe getestet: Onboarding (Connect, Direct Charges), Checkout mit 1 % Application Fee, Webhooks, Rückerstattung, Magic-Link-Login, Kalender, Buchungen, Einstellungen, E-Mails. **Aktivieren mit eigenen Stripe-Testschlüsseln** (siehe unten). Monatsabrechnung fehlt noch. |
-| M3 Channex | offen (Outbox-Einträge und Webhook-Signaturprüfung sind schon da) |
+| **M2 Stripe und Admin** | Code fertig und mit gemocktem Stripe getestet: Onboarding (Connect, Direct Charges), Checkout mit 1 % Application Fee, Webhooks, Rückerstattung, Magic-Link-Login, Kalender, Buchungen, Einstellungen, E-Mails. **Aktivieren mit eigenen Stripe-Testschlüsseln** (siehe unten). |
+| **M3 Channex** | Code fertig und mit gemockter Channex-API getestet: ARI-Outbox (gebündelt, Rate-Limit 10/min, Backoff, Alarm), Buchungen über Feed + Ack (neu, geändert, storniert, Überbuchung, unbekanntes Mapping), Webhook mit HMAC, Admin-Seite „Channex“ (anlegen oder IDs zuordnen, Vollabgleich). **Aktivieren mit Channex-Staging-Schlüssel.** Monatsabrechnung mit CSV und Druck/PDF. |
+| Rechtstexte | AGB und Datenschutzerklärung als Entwurf (DE/EN) unter `/<sprache>/agb` und `/<sprache>/datenschutz`, Betreiberangaben aus `PLATFORM_*`-Variablen. **Vor dem Livegang prüfen lassen.** |
 | M4 Modul Gäste | offen |
 
 ## Lokal starten
@@ -33,7 +34,7 @@ npm run worker                       # zweites Terminal: Holds freigeben, E-Mail
 
 ```bash
 createdb hotel_test                  # einmalig; oder TEST_DATABASE_URL setzen
-npm test                             # Unit + Integration gegen echte Postgres-DB (66 Tests)
+npm test                             # Unit + Integration gegen echte Postgres-DB (85 Tests)
 npm run test:e2e                     # Playwright: suchen, buchen, stornieren (Dev-Server muss laufen oder wird gestartet)
 ```
 
@@ -50,6 +51,17 @@ Abnahmetests (SPEC 12): `tests/unit/pricing.test.ts` (Preis-Testfälle 5.2), `te
    Das angezeigte `whsec_...` als `STRIPE_WEBHOOK_SECRET_CONNECT` eintragen. Ereignisse: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`, `charge.dispute.created`, `account.updated`.
 4. Admin → Einstellungen → „Stripe-Konto einrichten“ → Test-Onboarding durchklicken → zurück → „Status neu laden“. Danach kann das Hotel live geschaltet werden.
 5. Buchen mit Testkarte `4242 4242 4242 4242`. TWINT muss im Stripe-Dashboard freigeschaltet sein.
+
+## Channex aktivieren (M3, Staging)
+
+1. Konto auf https://staging.channex.io anlegen, API-Schlüssel erzeugen.
+2. `.env.local`: `CHANNEX_BASE_URL=https://staging.channex.io/api/v1`, `CHANNEX_API_KEY=...`
+3. `npm run worker` starten (sendet alle 6 s die Änderungen, holt alle 2 Minuten Buchungen).
+4. Admin → Channex → „In Channex anlegen“ (oder vorhandene IDs eintragen) → „Abgleich einschalten“.
+5. Optional Webhook in Channex: URL `<APP_BASE_URL>/api/webhooks/channex`, Ereignis `booking`, signiert; den Signaturschlüssel als `CHANNEX_WEBHOOK_SECRET` eintragen. Ohne Webhook kommen Buchungen spätestens nach 2 Minuten.
+6. In Channex Booking.com verbinden und eine Testbuchung auslösen → erscheint unter Buchungen.
+
+Für die Zertifizierung (SPEC 7.4) zeigt man Channex live: Preisänderung und Sperre im Admin-Kalender, Buchung, Änderung und Storno.
 
 ## Betrieb
 

@@ -26,7 +26,7 @@ async function defaultMailer(msg: Parameters<Mailer>[0]) {
   if (!res.ok) throw new Error(`Postmark ${res.status}: ${await res.text()}`);
 }
 
-const PLATFORM_DEFAULT_HOTEL = { name: "Direktbuchung", contactEmail: "", contactPhone: null, checkinTime: "15:00", checkoutTime: "11:00" } as unknown as Hotel;
+const PLATFORM_DEFAULT_HOTEL = { name: process.env.PLATFORM_NAME || "Pontivo", contactEmail: "", contactPhone: null, checkinTime: "15:00", checkoutTime: "11:00" } as unknown as Hotel;
 
 async function renderRow(row: typeof emailOutbox.$inferSelect): Promise<Rendered> {
   const [hotel] = row.hotelId ? await db().select().from(hotels).where(eq(hotels.id, row.hotelId)) : [];

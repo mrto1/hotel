@@ -5,12 +5,13 @@ Annahmen sind im Code mit `// ASSUMPTION:` markiert (`grep -rn "ASSUMPTION" src 
 ## Offene Fragen (aus SPEC 15)
 
 - [ ] Channex: Produktions-URL und Preise für Staging/Produktion.
-- [ ] Channex-Webhook: Format von `x-hmac-signature-256` (Hex?) und `x-hmac-timestamp` (Sekunden?) gegen die Doku prüfen (`src/integrations/channex/signature.ts`).
 - [ ] Kurtaxe: Zeilen mit `status='needs_confirmation'` (Wildhaus-Alt St. Johann, Speicher, Hundwil) und AI-Satz (2.50 laut Verordnung, 2.70 laut Drittquelle). Hotels können den Satz im Admin bestätigen.
 - [ ] AVS-Schnittstelle (Format, Zugang, Kosten) für Meldeschein, Kurtaxe und HESTA.
 - [ ] Gästemeldung Appenzell Innerrhoden.
 - [ ] Hotels mit eigenem Channel-Manager (z. B. Hotel-Spider) statt Channex.
-- [ ] Rechtstexte (AGB Gäste, Vertrag Hotel, Datenschutzerklärung) – liefert der Betreiber. Der Buchungsablauf verlangt bereits die AGB-Bestätigung, verlinkt aber noch keine Seite.
+- [ ] Rechtstexte: AGB und Datenschutzerklärung für Gäste liegen als Entwurf vor (`src/legal/texts.ts`) – juristisch prüfen lassen. Es fehlt noch der Vertrag mit dem Hotel inkl. Auftragsbearbeitungsvereinbarung. Betreiberangaben in `PLATFORM_*` setzen.
+- [ ] Channex-Feed: Namen der Paginierungsparameter (Doku nennt sie nicht).
+- [ ] Channex: Zuschläge pro Person (extra_adult, Einzelrabatt) werden nicht übertragen – Rate Plan nur mit Basisbelegung.
 - [ ] Stripe/TWINT: Branchencode (MCC) für Hotels – TWINT ist für einzelne Branchen eingeschränkt. Mit Stripe klären, bevor das erste Hotel live geht.
 
 ## Getroffene Annahmen (v1)
@@ -29,3 +30,7 @@ Annahmen sind im Code mit `// ASSUMPTION:` markiert (`grep -rn "ASSUMPTION" src 
 | Neue Tage im Horizont | Preis/Regeln vom gleichen Wochentag eine Woche vorher | `src/services/inventory.ts` |
 | Zimmer sperren | `blocked` wird auf `total` begrenzt | `src/services/inventory.ts` |
 | Stornierung durch Gast | Nur bis zum Anreisetag; danach nur durch das Hotel | `src/services/bookings.ts` |
+| Channex-Outbox | Vergangene Tage weggelassen, höchstens 500 Tage in die Zukunft (Channex `state_length`); fehlende Preiszeile → `stop_sell`; `max_stay` NULL → 0 | `src/integrations/channex/outbox-worker.ts` |
+| Channex-Feed | Paginierung durch erneutes Laden der ersten Seite nach den Acks; fehlgeschlagene Revisionen blockieren weitere Revisionen derselben Buchung im Lauf | `src/integrations/channex/feed.ts` |
+| OTA-Buchungen | Kurtaxe 0 (unbekannt), `days` fehlt → Betrag gleichmässig verteilt | `src/integrations/channex/feed.ts` |
+| Monatsabrechnung | Stichtag Bestätigung (Hotelzeit), Rückerstattungen beim Buchungsmonat, Netto-Gebühr anteilig; PDF über Druckansicht des Browsers | `src/services/report.ts` |

@@ -20,7 +20,8 @@ components/public/      Hotel-Website und Buchungsstrecke
 src/domain/             reine Logik ohne I/O (Preise, Kurtaxe, Verfügbarkeit, Storno, Zustandsautomat)
 src/services/           DB-Logik (Suche, Buchungen/Hold, Kalender, Einstellungen)
 src/integrations/stripe Stripe Connect (Checkout, Webhooks, Refund, Onboarding)
-src/integrations/channex  M3 (bisher nur Webhook-Signatur)
+src/integrations/channex  Channex: Client, Outbox-Worker, Feed/Ack, Webhook-Signatur, Verbinden
+src/legal/               AGB und Datenschutz (Entwurf)
 src/email/              Outbox, Templates, Versand (Postmark)
 src/jobs/worker.ts      pg-boss Worker (Holds, E-Mails, Horizont)
 db/migrations/          SQL-Migrationen (scripts/migrate.ts)

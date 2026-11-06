@@ -14,6 +14,12 @@ const schema = z.object({
   EMAIL_FROM: z.string().default("buchung@example.ch"),
   PLATFORM_ALERT_EMAIL: z.string().optional(),
   AUTH_SECRET: z.string().min(16).optional(),
+  // Betreiber der Plattform (für AGB, Datenschutz, Fusszeile)
+  PLATFORM_NAME: z.string().default("Pontivo"),
+  PLATFORM_OPERATOR: z.string().optional(), // z. B. "Pontivo, Inhaber Vorname Guidali"
+  PLATFORM_ADDRESS: z.string().optional(), // z. B. "Musterstrasse 1, 8400 Winterthur"
+  PLATFORM_CONTACT_EMAIL: z.string().optional(),
+  HOSTING_PROVIDER: z.string().optional(), // z. B. "Infomaniak Network SA, Genf (Schweiz)"
 });
 
 export type Env = z.infer<typeof schema>;

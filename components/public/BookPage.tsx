@@ -75,6 +75,7 @@ export async function BookPage({ hotel, locale, base, sp }: { hotel: Hotel; loca
                   adults={q.adults}
                   children={q.children}
                   ages={q.ages}
+                  base={base}
                 />
               </details>
             </article>

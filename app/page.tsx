@@ -14,7 +14,8 @@ export default async function Root() {
   const list = env().NODE_ENV === "production" ? [] : await db().select().from(hotels).orderBy(hotels.name);
   return (
     <main className="wrap" style={{ padding: "48px 16px" }}>
-      <h1>Direktbuchung für Hotels</h1>
+      <h1>{env().PLATFORM_NAME}</h1>
+      <h2 style={{ fontWeight: 400 }}>Direktbuchung für Hotels</h2>
       <p className="muted">Website, Buchungsmaschine und Channel-Abgleich für kleine Hotels. 1 % pro Buchung.</p>
       {list.length ? (
         <section className="card" style={{ marginTop: 24 }}>

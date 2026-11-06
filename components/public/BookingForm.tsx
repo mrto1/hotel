@@ -12,6 +12,7 @@ export function BookingForm(props: {
   adults: number;
   children: number;
   ages: number[];
+  base: string;
 }) {
   const d = t(props.locale);
   const [busy, setBusy] = useState(false);
@@ -69,7 +70,16 @@ export function BookingForm(props: {
       </div>
       <div style={{ marginTop: 12 }}><label>{d.notes}</label><textarea name="notes" rows={2} /></div>
       <label className="check" style={{ marginTop: 12 }}><input type="checkbox" name="marketing" />{d.marketing}</label>
-      <label className="check"><input type="checkbox" name="terms" required />{d.terms}</label>
+      <label className="check">
+        <input type="checkbox" name="terms" required />
+        <span>
+          {props.locale === "de" ? "Ich akzeptiere die " : "I accept the "}
+          <a href={`${props.base}/${props.locale}/agb`} target="_blank">{props.locale === "de" ? "AGB" : "terms"}</a>
+          {props.locale === "de" ? " und die Stornobedingungen und habe die " : " and the cancellation policy and have read the "}
+          <a href={`${props.base}/${props.locale}/datenschutz`} target="_blank">{props.locale === "de" ? "Datenschutzerklärung" : "privacy policy"}</a>
+          {props.locale === "de" ? " gelesen." : "."}
+        </span>
+      </label>
       {error ? <p className="notice warn" role="alert">{error}</p> : null}
       <button className="btn" type="submit" disabled={busy || !ready} style={{ marginTop: 12 }}>{d.payNow}</button>
       <p className="muted small">{d.payMethods}</p>
