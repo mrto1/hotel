@@ -5,8 +5,9 @@ export const metadata: Metadata = { title: "Direktbuchung", robots: { index: tru
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de">
-      <body>{children}</body>
+    // suppressHydrationWarning: Browser-Erweiterungen (z. B. Dark Reader) ändern Attribute an <html>/<body>
+    <html lang="de" suppressHydrationWarning>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
