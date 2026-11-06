@@ -44,6 +44,18 @@ export type HotelContent = {
   de?: { headline?: string; intro?: string };
   en?: { headline?: string; intro?: string };
   photos?: { url: string; alt?: string }[];
+  /** Erscheinungsbild der Buchungsseite */
+  brand?: HotelBrand;
+};
+
+export type HotelBrand = {
+  /** Hauptfarbe als #rrggbb */
+  color?: string;
+  logoUrl?: string;
+  /** Eigene Website des Hotels (Modus "booking_only": Link zurück) */
+  websiteUrl?: string;
+  /** "website" = Pontivo ist die Hotel-Website; "booking_only" = Hotel behält seine Website, Pontivo nur Buchung */
+  mode?: "website" | "booking_only";
 };
 
 export const users = pgTable("users", {

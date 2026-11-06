@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { atLeast, readSessionValue, roleIn, SESSION_COOKIE } from "@/src/auth/session";
 import { addPhoto, RoomError } from "@/src/services/rooms";
+import { setLogo } from "@/src/services/brand";
 import { deleteImage, saveImage, UploadError, MAX_UPLOAD_BYTES } from "@/src/lib/storage";
 import { env } from "@/src/env";
 
@@ -18,6 +19,20 @@ export async function POST(req: Request, ctx: { params: Promise<{ hotelId: strin
   if (len > MAX_UPLOAD_BYTES * 3 + 100_000) return back("Zu grosse Datei(en)");
   const form = await req.formData();
   const roomTypeId = String(form.get("roomTypeId") ?? "") || null;
+  if (form.get("target") === "logo") {
+    const f = form.get("file");
+    const toEmbed = (msg: string) => Response.redirect(`${env().APP_BASE_URL}/admin/${hotelId}/embed?msg=${encodeURIComponent(msg)}`, 303);
+    if (!(f instanceof File) || f.size === 0) return toEmbed("Keine Datei ausgewählt");
+    try {
+      const url = await saveImage(hotelId, new Uint8Array(await f.arrayBuffer()));
+      const old = await setLogo(hotelId, url, `user:${userId}`);
+      if (old) await deleteImage(old);
+      return toEmbed("Logo gespeichert");
+    } catch (e) {
+      if (e instanceof UploadError) return toEmbed(`Logo: ${e.message}`);
+      throw e;
+    }
+  }
   const alt = String(form.get("alt") ?? "").trim().slice(0, 200) || undefined;
   const files = form.getAll("file").filter((f): f is File => f instanceof File && f.size > 0).slice(0, 3);
   if (!files.length) return back("Keine Datei ausgewählt");

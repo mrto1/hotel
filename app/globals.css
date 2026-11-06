@@ -124,3 +124,15 @@ details > summary::-webkit-details-marker { display: none; }
 .offer-photo { width: 160px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
 @media (max-width: 600px) { .offer-photo { width: 100%; } }
 @media (max-width: 1360px) { .admin-user { display: none; } .admin-head form { margin-left: auto; } }
+
+/* ---------- Erscheinungsbild pro Hotel ---------- */
+.brand-logo { height: 40px; width: auto; max-width: 220px; object-fit: contain; display: block; }
+.branded .btn:not(.secondary):not(.danger) { background: var(--brand); color: var(--brand-ink); }
+.branded .btn.secondary { color: var(--brand-link); border-color: var(--brand-link); }
+@media (prefers-color-scheme: light) {
+  .branded { --accent: var(--brand-link); --accent-soft: color-mix(in srgb, var(--brand) 14%, white); }
+}
+.branded input:focus, .branded select:focus, .branded textarea:focus { outline-color: var(--brand); }
+
+.copybox { display: flex; gap: 10px; align-items: flex-start; }
+.copybox pre { flex: 1; margin: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: .82rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
