@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 /** E2E mit PAYMENT_PROVIDER=fake und Seed-Daten (npm run db:reset). */
 test("Gast sucht, bucht und storniert (Fake-Zahlung)", async ({ page }) => {
   await page.goto("/h/demo-gasthof/de");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Demo Gasthof");
+  await expect(page.locator(".brand")).toContainText("Demo Gasthof");
   const d = new Date();
   d.setDate(d.getDate() + 20 + Math.floor(Math.random() * 200));
   while (d.getDay() === 6 || d.getDay() === 5) d.setDate(d.getDate() + 1); // Mindestnächte Sa vermeiden
