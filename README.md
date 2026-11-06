@@ -22,8 +22,8 @@ Voraussetzungen: [Node.js 22](https://nodejs.org), [Git](https://git-scm.com), [
 git clone https://github.com/mrto1/hotel.git
 cd hotel
 npm install
-docker compose up -d db              # PostgreSQL 16 im Hintergrund
 cp .env.example .env.local           # Windows: copy .env.example .env.local
+docker compose up -d db              # PostgreSQL 16 im Hintergrund
 npm run db:reset                     # Tabellen + Demo-Hotel "Demo Gasthof" (Glarus)
 npm run dev                          # http://localhost:3000
 npm run worker                       # optional, zweites Terminal: Holds freigeben, E-Mails ausgeben
