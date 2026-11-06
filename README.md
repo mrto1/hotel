@@ -16,14 +16,17 @@ Auftrag und Details: [`docs/SPEC.md`](docs/SPEC.md) · Offene Fragen und Annahme
 
 ## Lokal starten
 
-Voraussetzungen: Node 22, PostgreSQL 16 (oder `docker compose up -d db`).
+Voraussetzungen: [Node.js 22](https://nodejs.org), [Git](https://git-scm.com), [Docker Desktop](https://www.docker.com/products/docker-desktop/) (für die Datenbank).
 
 ```bash
+git clone https://github.com/mrto1/hotel.git
+cd hotel
 npm install
-cp .env.example .env.local          # DATABASE_URL, AUTH_SECRET setzen
-npm run db:reset                     # Migrationen + Demo-Hotel "Demo Gasthof" (Glarus)
+docker compose up -d db              # PostgreSQL 16 im Hintergrund
+cp .env.example .env.local           # Windows: copy .env.example .env.local
+npm run db:reset                     # Tabellen + Demo-Hotel "Demo Gasthof" (Glarus)
 npm run dev                          # http://localhost:3000
-npm run worker                       # zweites Terminal: Holds freigeben, E-Mails senden
+npm run worker                       # optional, zweites Terminal: Holds freigeben, E-Mails ausgeben
 ```
 
 - Hotel-Website: http://demo-gasthof.localhost:3000 (Hotel wird über die Domain erkannt) oder Vorschau http://localhost:3000/h/demo-gasthof/de
@@ -33,7 +36,8 @@ npm run worker                       # zweites Terminal: Holds freigeben, E-Mail
 ## Tests
 
 ```bash
-createdb hotel_test                  # einmalig; oder TEST_DATABASE_URL setzen
+docker compose exec db createdb -U postgres hotel_test   # einmalig
+# TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/hotel_test setzen
 npm test                             # Unit + Integration gegen echte Postgres-DB (85 Tests)
 npm run test:e2e                     # Playwright: suchen, buchen, stornieren (Dev-Server muss laufen oder wird gestartet)
 ```
