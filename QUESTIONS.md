@@ -36,3 +36,4 @@ Annahmen sind im Code mit `// ASSUMPTION:` markiert (`grep -rn "ASSUMPTION" src 
 | Monatsabrechnung | Stichtag Bestätigung (Hotelzeit), Rückerstattungen beim Buchungsmonat, Netto-Gebühr anteilig; PDF über Druckansicht des Browsers | `src/services/report.ts` |
 | Fotos | Lokaler Ordner `UPLOAD_DIR` statt S3, keine Verkleinerung, max. 8 MB, nur JPG/PNG/WebP (an den Bytes erkannt) | `src/lib/storage.ts` |
 | Zimmeranzahl | Weniger Zimmer als ab heute gebucht/gesperrt wird abgelehnt; `total` wird ab heute nachgeführt | `src/services/rooms.ts` |
+| Website-Editor | Feste Bausteine statt freiem Baukasten; Texte ohne Formatierung (Absätze/Zeilenumbrüche); Bilder nur aus der Foto-Bibliothek des Hotels | `src/domain/blocks.ts` |

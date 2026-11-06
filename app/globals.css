@@ -136,3 +136,38 @@ details > summary::-webkit-details-marker { display: none; }
 
 .copybox { display: flex; gap: 10px; align-items: flex-start; }
 .copybox pre { flex: 1; margin: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: .82rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+
+/* ---------- Bausteine der Hotel-Website ---------- */
+.blk { padding: 28px 0; }
+.blk p { max-width: 70ch; }
+.blk-hero .hero { padding: 28px 0 20px; }
+.blk-imgtext { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
+.blk-imgtext img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); }
+.blk-imgtext.img-right img { order: 2; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; display: block; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 32px; margin: 0; }
+.facts > div { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.facts dt { font-weight: 600; }
+.facts dd { margin: 0; text-align: right; color: var(--muted); }
+.site-nav { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+.site-nav a { color: var(--ink); text-decoration: none; font-size: .95rem; }
+.site-nav a[aria-current="page"] { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.site-head .wrap { flex-wrap: wrap; height: auto; min-height: 64px; padding-top: 10px; padding-bottom: 10px; }
+@media (max-width: 700px) { .blk-imgtext { grid-template-columns: 1fr; } .blk-imgtext.img-right img { order: 0; } }
+
+/* ---------- Website-Editor ---------- */
+.lfield { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .lfield { grid-template-columns: 1fr; } }
+.imgpick { border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.imgpick legend { font-size: .85rem; color: var(--muted); padding: 0 4px; }
+.imgpick label { position: relative; margin: 0; cursor: pointer; }
+.imgpick input { position: absolute; top: 6px; left: 6px; }
+.imgpick img, .imgpick .noimg { width: 110px; height: 80px; object-fit: cover; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; background: var(--bg); font-size: .8rem; color: var(--muted); }
+.imgpick input:checked + img, .imgpick input:checked + .noimg { border-color: var(--accent); }
+fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
+.addblocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.addblock { width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; cursor: pointer; font: inherit; color: var(--ink); display: flex; flex-direction: column; gap: 4px; }
+.addblock:hover { border-color: var(--accent); }
+.addblock span { font-size: .82rem; color: var(--muted); }
+.admin-head .wrap { flex-wrap: wrap; height: auto; min-height: 56px; row-gap: 6px; padding-top: 8px; padding-bottom: 8px; overflow: visible; }

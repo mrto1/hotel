@@ -7,6 +7,7 @@ import { grandTotal, priceStay, type NightlyPrice } from "../domain/pricing";
 import { computeTouristTax, needsChildAges, TouristTaxUnconfirmedError } from "../domain/tourist-tax";
 import { cancellationPolicyText } from "../domain/cancellation";
 import { taxRuleFor } from "./hotels";
+import { planName, roomDescription, roomName } from "../domain/i18n-names";
 
 export type SearchInput = StayQuery & { childrenAges?: (number | null)[] };
 
@@ -101,10 +102,10 @@ export async function searchOffers(
       }
       const priced = priceStay(res.rates, rp, input.adults, input.children);
       offers.push({
-        roomType: { id: rt.id, name: rt.name, description: rt.description, photos: rt.photos, maxOccupancy: rt.maxOccupancy },
+        roomType: { id: rt.id, name: roomName(rt, lang), description: roomDescription(rt, lang), photos: rt.photos, maxOccupancy: rt.maxOccupancy },
         ratePlan: {
           id: rp.id,
-          name: rp.name,
+          name: planName(rp, lang),
           breakfastIncluded: rp.breakfastIncluded,
           freeCancelHours: rp.freeCancelHours,
           cancelFeeBps: rp.cancelFeeBps,

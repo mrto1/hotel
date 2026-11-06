@@ -5,6 +5,7 @@ import { diffDays } from "@/src/domain/dates";
 import { formatChf } from "@/src/domain/money";
 import { formatDay, isLocale, t, type Locale } from "@/src/i18n/dict";
 import { Shell } from "@/components/public/Shell";
+import { planName, roomName } from "@/src/domain/i18n-names";
 import { CancelBox } from "@/components/public/CancelBox";
 import { AutoRefresh } from "@/components/public/AutoRefresh";
 
@@ -38,7 +39,7 @@ export default async function BookingView({ params, searchParams }: { params: Pr
               {guest ? <tr><td>{d.guest}</td><td>{guest.firstName} {guest.lastName}</td></tr> : null}
               <tr><td>{d.checkin}</td><td>{formatDay(booking.checkin, locale)} ({hotel.checkinTime.slice(0, 5)})</td></tr>
               <tr><td>{d.checkout}</td><td>{formatDay(booking.checkout, locale)} ({hotel.checkoutTime.slice(0, 5)})</td></tr>
-              <tr><td>{roomType?.name}{plan ? ` · ${plan.name}` : ""}</td><td>{n} {n === 1 ? d.night : d.nights} · {booking.adults} {d.adults}{booking.children ? `, ${booking.children} ${d.children}` : ""}</td></tr>
+              <tr><td>{roomType ? roomName(roomType, locale) : ""}{plan ? ` · ${planName(plan, locale)}` : ""}</td><td>{n} {n === 1 ? d.night : d.nights} · {booking.adults} {d.adults}{booking.children ? `, ${booking.children} ${d.children}` : ""}</td></tr>
               <tr><td>{d.roomPrice}</td><td>{formatChf(booking.roomsTotalRappen)}</td></tr>
               <tr><td>{d.touristTax}</td><td>{hotel.touristTaxIncludedInPrice ? d.included : formatChf(booking.touristTaxRappen)}</td></tr>
               <tr><td><strong>{d.total}</strong></td><td><strong>{formatChf(booking.totalRappen)}</strong></td></tr>

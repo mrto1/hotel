@@ -24,9 +24,10 @@ export const roomTypeSchema = z
     maxOccupancy: z.number().int().min(1).max(30),
     sortOrder: z.number().int().min(0).max(999),
     active: z.boolean(),
+    i18n: z.object({ en: z.object({ name: z.string().trim().max(120).optional(), description: z.string().trim().max(2000).optional() }).optional() }).default({}),
   })
   .refine((v) => v.maxOccupancy >= v.maxAdults, { message: "Max. Personen muss mindestens so gross sein wie max. Erwachsene", path: ["maxOccupancy"] });
-export type RoomTypeInput = z.infer<typeof roomTypeSchema>;
+export type RoomTypeInput = z.input<typeof roomTypeSchema>;
 
 export const ratePlanSchema = z.object({
   name: z.string().trim().min(1, "Name fehlt").max(120),
@@ -37,8 +38,9 @@ export const ratePlanSchema = z.object({
   extraAdultRappen: z.number().int().min(0).max(10_000_000),
   singleDiscountRappen: z.number().int().min(0).max(10_000_000),
   active: z.boolean(),
+  i18n: z.object({ en: z.object({ name: z.string().trim().max(120).optional() }).optional() }).default({}),
 });
-export type RatePlanInput = z.infer<typeof ratePlanSchema>;
+export type RatePlanInput = z.input<typeof ratePlanSchema>;
 
 async function hotelOrThrow(hotelId: string) {
   const [h] = await db().select().from(hotels).where(eq(hotels.id, hotelId));

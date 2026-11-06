@@ -35,6 +35,7 @@ function roomInput(f: FormData): RoomTypeInput {
     maxOccupancy: n(f, "maxOccupancy"),
     sortOrder: n(f, "sortOrder"),
     active: f.get("active") === "on",
+    i18n: { en: { name: s(f, "nameEn") || undefined, description: s(f, "descriptionEn") || undefined } },
   };
 }
 
@@ -49,6 +50,7 @@ function planInput(f: FormData): RatePlanInput {
     extraAdultRappen: chf(f, "extraAdult"),
     singleDiscountRappen: chf(f, "singleDiscount"),
     active: f.get("active") === "on",
+    i18n: { en: { name: s(f, "nameEn") || undefined } },
   };
 }
 
@@ -169,6 +171,10 @@ function RoomForm({ hotelId, rt, canEdit, nextOrder = 0 }: { hotelId: string; rt
         <div><label>Reihenfolge auf der Website</label><input name="sortOrder" type="number" min={0} defaultValue={rt?.sortOrder ?? nextOrder} disabled={!canEdit} /></div>
       </div>
       <div><label>Beschreibung</label><textarea name="description" rows={2} defaultValue={rt?.description ?? ""} disabled={!canEdit} placeholder="Grösse, Bett, Aussicht, Ausstattung" /></div>
+      <div className="form-grid">
+        <div><label>Name auf Englisch</label><input name="nameEn" defaultValue={rt?.i18n?.en?.name ?? ""} disabled={!canEdit} placeholder="z. B. Double room with lake view" /></div>
+      </div>
+      <div><label>Beschreibung auf Englisch</label><textarea name="descriptionEn" rows={2} defaultValue={rt?.i18n?.en?.description ?? ""} disabled={!canEdit} /></div>
       <label className="check"><input type="checkbox" name="active" defaultChecked={rt?.active ?? true} disabled={!canEdit} />Buchbar (auf der Website und bei Portalen)</label>
       {canEdit ? <button className="btn">{rt ? "Zimmertyp speichern" : "Zimmertyp anlegen"}</button> : null}
     </form>
@@ -184,6 +190,7 @@ function PlanForm({ hotelId, roomTypeId, p, canEdit }: { hotelId: string; roomTy
       <input type="hidden" name="ratePlanId" value={p?.id ?? ""} />
       <div className="form-grid">
         <div><label>Name des Tarifs</label><input name="name" defaultValue={p?.name ?? "Flexibel"} required disabled={!canEdit} /></div>
+        <div><label>Name auf Englisch</label><input name="nameEn" defaultValue={p?.i18n?.en?.name ?? (p ? "" : "Flexible")} disabled={!canEdit} /></div>
         {!p ? <div><label>Startpreis CHF pro Nacht</label><input name="price" inputMode="decimal" required placeholder="z. B. 180" disabled={!canEdit} /></div> : null}
         <div><label>Preis gilt für Personen</label><input name="baseOccupancy" type="number" min={1} defaultValue={p?.baseOccupancy ?? 2} required disabled={!canEdit} /></div>
         <div><label>Zuschlag je weitere erw. Person CHF</label><input name="extraAdult" inputMode="decimal" defaultValue={p ? rappenToDecimal(p.extraAdultRappen) : "0"} disabled={!canEdit} /></div>

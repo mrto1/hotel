@@ -5,8 +5,13 @@ import { todayIn, addDays } from "@/src/domain/dates";
 import { t, type Locale } from "@/src/i18n/dict";
 import { Shell } from "./Shell";
 import { SearchBar } from "./SearchBar";
+import { getPublicPage } from "@/src/services/site";
+import { SitePageView } from "./SitePageView";
 
 export async function HotelHome({ hotel, locale, base }: { hotel: Hotel; locale: Locale; base: string }) {
+  // Mit dem Website-Editor gestaltete Startseite hat Vorrang
+  const home = await getPublicPage(hotel.id, "");
+  if (home) return <SitePageView hotel={hotel} page={home} locale={locale} base={base} />;
   const d = t(locale);
   const content = hotel.content?.[locale] ?? {};
   const rooms = await db().select().from(roomTypes).where(and(eq(roomTypes.hotelId, hotel.id), eq(roomTypes.active, true))).orderBy(asc(roomTypes.sortOrder));

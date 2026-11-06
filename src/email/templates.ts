@@ -2,6 +2,7 @@ import { formatChf } from "../domain/money";
 import { cancellationPolicyText } from "../domain/cancellation";
 import { formatDay, type Locale } from "../i18n/dict";
 import type { Booking, Hotel, RatePlan, RoomType } from "../db/schema";
+import { planName, roomName } from "../domain/i18n-names";
 
 /**
  * E-Mail-Texte DE/EN (SPEC 10).
@@ -30,7 +31,7 @@ function summary(c: EmailContext, l: Locale): string[] {
     `${de ? "Buchungsnummer" : "Booking number"}: ${b.reference}`,
     `${de ? "Anreise" : "Check-in"}: ${formatDay(b.checkin, l)} (${c.hotel.checkinTime.slice(0, 5)})`,
     `${de ? "Abreise" : "Check-out"}: ${formatDay(b.checkout, l)} (${c.hotel.checkoutTime.slice(0, 5)})`,
-    `${de ? "Zimmer" : "Room"}: ${c.roomType?.name ?? "-"}${c.plan ? ` · ${c.plan.name}` : ""}`,
+    `${de ? "Zimmer" : "Room"}: ${c.roomType ? roomName(c.roomType, l) : "-"}${c.plan ? ` · ${planName(c.plan, l)}` : ""}`,
     `${de ? "Personen" : "Guests"}: ${b.adults}${b.children ? ` + ${b.children} ${de ? "Kinder" : "children"}` : ""}`,
     `${de ? "Total" : "Total"}: ${formatChf(b.totalRappen)}${b.touristTaxRappen ? ` (${de ? "inkl. Kurtaxe" : "incl. tourist tax"} ${formatChf(b.touristTaxRappen)})` : ""}`,
   ];

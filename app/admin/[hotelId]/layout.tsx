@@ -11,12 +11,13 @@ export default async function HotelAdminLayout({ children, params }: { children:
           <nav>
             <a href={`/admin/${hotel.id}/calendar`}>Kalender</a>
             <a href={`/admin/${hotel.id}/rooms`}>Zimmer</a>
+            <a href={`/admin/${hotel.id}/site`}>Website</a>
             <a href={`/admin/${hotel.id}/bookings`}>Buchungen</a>
             <a href={`/admin/${hotel.id}/report`}>Abrechnung</a>
             <a href={`/admin/${hotel.id}/channex`}>Channex</a>
             <a href={`/admin/${hotel.id}/embed`}>Einbinden</a>
             <a href={`/admin/${hotel.id}/settings`}>Einstellungen</a>
-            <a href={hotel.primaryDomain ? `//${hotel.primaryDomain}` : `/h/${hotel.slug}/de`} target="_blank">Website ↗</a>
+            <a href={hotel.primaryDomain ? `//${hotel.primaryDomain}` : `/h/${hotel.slug}/de`} target="_blank">Ansehen ↗</a>
           </nav>
           <span className="muted small admin-user" style={{ marginLeft: "auto", whiteSpace: "nowrap" }}>{user.email} · {role}</span>
           <form action="/api/auth/logout" method="post"><button className="btn secondary small">Abmelden</button></form>

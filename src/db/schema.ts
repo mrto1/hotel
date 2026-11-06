@@ -108,6 +108,7 @@ export const roomTypes = pgTable("room_types", {
   sortOrder: integer("sort_order").notNull().default(0),
   channexRoomTypeId: uuid("channex_room_type_id").unique(),
   active: boolean("active").notNull().default(true),
+  i18n: jsonb("i18n").$type<{ en?: { name?: string; description?: string } }>().notNull().default({}),
   createdAt: ts("created_at").notNull().defaultNow(),
 });
 
@@ -124,6 +125,7 @@ export const ratePlans = pgTable("rate_plans", {
   singleDiscountRappen: integer("single_discount_rappen").notNull().default(0),
   channexRatePlanId: uuid("channex_rate_plan_id").unique(),
   active: boolean("active").notNull().default(true),
+  i18n: jsonb("i18n").$type<{ en?: { name?: string } }>().notNull().default({}),
   createdAt: ts("created_at").notNull().defaultNow(),
 });
 
@@ -310,6 +312,24 @@ export const cantonRules = pgTable("canton_rules", {
   notes: text("notes"),
   sourceUrl: text("source_url"),
 });
+
+export type L10n = { de?: string; en?: string };
+
+export const sitePages = pgTable("site_pages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  hotelId: uuid("hotel_id").notNull(),
+  slug: text("slug").notNull(),
+  title: jsonb("title").$type<L10n>().notNull().default({}),
+  navLabel: jsonb("nav_label").$type<L10n>().notNull().default({}),
+  showInNav: boolean("show_in_nav").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  seo: jsonb("seo").$type<{ de?: { title?: string; description?: string }; en?: { title?: string; description?: string } }>().notNull().default({}),
+  blocks: jsonb("blocks").$type<import("../domain/blocks").Block[]>().notNull().default([]),
+  published: boolean("published").notNull().default(true),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
+});
+export type SitePage = typeof sitePages.$inferSelect;
 
 export type Hotel = typeof hotels.$inferSelect;
 export type RoomType = typeof roomTypes.$inferSelect;
