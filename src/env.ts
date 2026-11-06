@@ -19,7 +19,9 @@ const schema = z.object({
   PLATFORM_OPERATOR: z.string().optional(), // z. B. "Pontivo, Inhaber Vorname Guidali"
   PLATFORM_ADDRESS: z.string().optional(), // z. B. "Musterstrasse 1, 8400 Winterthur"
   PLATFORM_CONTACT_EMAIL: z.string().optional(),
-  HOSTING_PROVIDER: z.string().optional(), // z. B. "Infomaniak Network SA, Genf (Schweiz)"
+  HOSTING_PROVIDER: z.string().optional(),
+  // Fotos: Ordner auf dem Server (Docker: als Volume einbinden)
+  UPLOAD_DIR: z.string().default("./data/uploads"), // z. B. "Infomaniak Network SA, Genf (Schweiz)"
 });
 
 export type Env = z.infer<typeof schema>;

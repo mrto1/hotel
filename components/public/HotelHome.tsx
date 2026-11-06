@@ -13,6 +13,7 @@ export async function HotelHome({ hotel, locale, base }: { hotel: Hotel; locale:
   const today = todayIn(hotel.timezone);
   return (
     <Shell hotel={hotel} locale={locale} base={base}>
+      {hotel.content.photos?.[0] ? <img className="hero-photo" src={hotel.content.photos[0].url} alt={hotel.content.photos[0].alt ?? hotel.name} /> : null}
       <section className="hero">
         <h1>{content.headline ?? hotel.name}</h1>
         {content.intro ? <p>{content.intro}</p> : null}
@@ -24,7 +25,12 @@ export async function HotelHome({ hotel, locale, base }: { hotel: Hotel; locale:
         <div className="grid">
           {rooms.map((r) => (
             <article key={r.id} className="card">
-              {r.photos[0] ? <img src={r.photos[0].url} alt={r.photos[0].alt ?? r.name} style={{ width: "100%", borderRadius: 8, marginBottom: 12 }} /> : null}
+              {r.photos[0] ? <img className="room-photo" src={r.photos[0].url} alt={r.photos[0].alt ?? r.name} loading="lazy" /> : null}
+              {r.photos.length > 1 ? (
+                <div className="thumbs">
+                  {r.photos.slice(1).map((p) => <a key={p.url} href={p.url} target="_blank"><img src={p.url} alt={p.alt ?? r.name} loading="lazy" /></a>)}
+                </div>
+              ) : null}
               <h3>{r.name}</h3>
               {r.description ? <p className="muted small">{r.description}</p> : null}
               <p className="small">{d.upTo} {r.maxOccupancy} {d.persons}</p>

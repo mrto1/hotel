@@ -47,7 +47,9 @@ export async function BookPage({ hotel, locale, base, sp }: { hotel: Hotel; loca
           </p>
           {res.offers.map((o) => (
             <article key={o.ratePlan.id} className="card offer">
-              <div>
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                {o.roomType.photos[0] ? <img className="offer-photo" src={o.roomType.photos[0].url} alt={o.roomType.photos[0].alt ?? o.roomType.name} loading="lazy" /> : null}
+                <div style={{ flex: "1 1 260px" }}>
                 <h3>{o.roomType.name} · {o.ratePlan.name}</h3>
                 <p className="small muted">
                   {o.ratePlan.breakfastIncluded ? d.breakfast : d.noBreakfast} · {o.cancellationPolicy}
@@ -58,6 +60,7 @@ export async function BookPage({ hotel, locale, base, sp }: { hotel: Hotel; loca
                     <tr><td>{d.touristTax}</td><td>{o.touristTaxIncluded ? d.included : formatChf(o.touristTaxRappen)}</td></tr>
                   </tbody>
                 </table>
+                </div>
               </div>
               <div className="price">
                 <div className="muted small">{d.total}</div>

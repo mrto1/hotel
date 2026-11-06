@@ -110,3 +110,17 @@ details > summary::-webkit-details-marker { display: none; }
 .stack > * + * { margin-top: 16px; }
 .kv { display: grid; grid-template-columns: 180px 1fr; gap: 6px 16px; }
 @media (max-width: 600px) { .kv { grid-template-columns: 1fr; } }
+
+/* ---------- Fotos ---------- */
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.photo { margin: 0; position: relative; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.photo .badge { position: absolute; top: 8px; left: 8px; }
+.photo-actions { display: flex; gap: 6px; padding: 8px; flex-wrap: wrap; }
+.hero-photo { width: 100%; aspect-ratio: 21 / 9; object-fit: cover; border-radius: var(--radius); margin: 24px 0 0; display: block; }
+.room-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; margin-bottom: 12px; display: block; }
+.thumbs { display: flex; gap: 6px; margin: -6px 0 12px; overflow-x: auto; }
+.thumbs img { width: 64px; height: 48px; object-fit: cover; border-radius: 6px; flex: none; }
+.offer-photo { width: 160px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
+@media (max-width: 600px) { .offer-photo { width: 100%; } }
+@media (max-width: 1360px) { .admin-user { display: none; } .admin-head form { margin-left: auto; } }

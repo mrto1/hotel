@@ -32,13 +32,14 @@ npm run worker                       # optional, zweites Terminal: Holds freigeb
 - Hotel-Website: http://demo-gasthof.localhost:3000 (Hotel wird über die Domain erkannt) oder Vorschau http://localhost:3000/h/demo-gasthof/de
 - Admin: http://localhost:3000/admin/login mit `admin@example.ch`. Ohne `POSTMARK_SERVER_TOKEN` erscheint der Login-Link direkt auf der Seite und E-Mails werden im Worker-Terminal ausgegeben.
 - Mit `PAYMENT_PROVIDER=fake` wird jede Buchung sofort bestätigt (ohne Zahlung).
+- Zimmer, Tarife und Fotos: Admin → «Zimmer». Fotos landen im Ordner `UPLOAD_DIR` (Standard `./data/uploads`).
 
 ## Tests
 
 ```bash
 docker compose exec db createdb -U postgres hotel_test   # einmalig
 # TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/hotel_test setzen
-npm test                             # Unit + Integration gegen echte Postgres-DB (85 Tests)
+npm test                             # Unit + Integration gegen echte Postgres-DB (92 Tests)
 npm run test:e2e                     # Playwright: suchen, buchen, stornieren (Dev-Server muss laufen oder wird gestartet)
 ```
 

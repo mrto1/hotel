@@ -34,3 +34,5 @@ Annahmen sind im Code mit `// ASSUMPTION:` markiert (`grep -rn "ASSUMPTION" src 
 | Channex-Feed | Paginierung durch erneutes Laden der ersten Seite nach den Acks; fehlgeschlagene Revisionen blockieren weitere Revisionen derselben Buchung im Lauf | `src/integrations/channex/feed.ts` |
 | OTA-Buchungen | Kurtaxe 0 (unbekannt), `days` fehlt → Betrag gleichmässig verteilt | `src/integrations/channex/feed.ts` |
 | Monatsabrechnung | Stichtag Bestätigung (Hotelzeit), Rückerstattungen beim Buchungsmonat, Netto-Gebühr anteilig; PDF über Druckansicht des Browsers | `src/services/report.ts` |
+| Fotos | Lokaler Ordner `UPLOAD_DIR` statt S3, keine Verkleinerung, max. 8 MB, nur JPG/PNG/WebP (an den Bytes erkannt) | `src/lib/storage.ts` |
+| Zimmeranzahl | Weniger Zimmer als ab heute gebucht/gesperrt wird abgelehnt; `total` wird ab heute nachgeführt | `src/services/rooms.ts` |
