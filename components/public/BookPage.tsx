@@ -1,0 +1,95 @@
+import type { Hotel } from "@/src/db/schema";
+import { searchParamsSchema } from "@/src/lib/validation";
+import { searchOffers } from "@/src/services/search";
+import { isBookable } from "@/src/services/hotels";
+import { env } from "@/src/env";
+import { diffDays, todayIn } from "@/src/domain/dates";
+import { formatChf } from "@/src/domain/money";
+import { formatDay, t, type Locale } from "@/src/i18n/dict";
+import { Shell } from "./Shell";
+import { SearchBar } from "./SearchBar";
+import { BookingForm } from "./BookingForm";
+
+type SP = Record<string, string | string[] | undefined>;
+
+export async function BookPage({ hotel, locale, base, sp }: { hotel: Hotel; locale: Locale; base: string; sp: SP }) {
+  const d = t(locale);
+  const one = (k: string) => (Array.isArray(sp[k]) ? sp[k]![0] : sp[k]);
+  const ageList = sp.age ? (Array.isArray(sp.age) ? sp.age : [sp.age]).join(",") : one("ages");
+  const parsed = searchParamsSchema.safeParse({ checkin: one("checkin"), checkout: one("checkout"), adults: one("adults"), children: one("children"), ages: ageList });
+  const today = todayIn(hotel.timezone);
+  const q = parsed.success ? parsed.data : null;
+  const path = q ? `/book?checkin=${q.checkin}&checkout=${q.checkout}&adults=${q.adults}&children=${q.children}${q.ages.length ? `&ages=${q.ages.join(",")}` : ""}` : "";
+
+  let body: React.ReactNode;
+  if (!isBookable(hotel, env().PAYMENT_PROVIDER)) {
+    body = <p className="notice warn">{d.notBookable}</p>;
+  } else if (!q) {
+    body = <p className="notice warn">{d.invalidSearch}</p>;
+  } else {
+    const res = await searchOffers(hotel, { checkin: q.checkin, checkout: q.checkout, adults: q.adults, children: q.children, childrenAges: q.ages }, { lang: locale });
+    if (!res.ok) {
+      body = (
+        <p className="notice warn">
+          {res.error === "child_ages_required" ? d.childAgesRequired : res.error === "tourist_tax_unconfirmed" ? d.notBookable : d.invalidSearch}
+        </p>
+      );
+    } else if (res.offers.length === 0) {
+      body = <p className="notice">{d.noOffers}</p>;
+    } else {
+      const n = diffDays(q.checkin, q.checkout);
+      body = (
+        <>
+          <h2>{d.offers}</h2>
+          <p className="muted">
+            {formatDay(q.checkin, locale)} – {formatDay(q.checkout, locale)} · {n} {n === 1 ? d.night : d.nights} · {q.adults} {d.adults}
+            {q.children ? `, ${q.children} ${d.children}` : ""}
+          </p>
+          {res.offers.map((o) => (
+            <article key={o.ratePlan.id} className="card offer">
+              <div>
+                <h3>{o.roomType.name} · {o.ratePlan.name}</h3>
+                <p className="small muted">
+                  {o.ratePlan.breakfastIncluded ? d.breakfast : d.noBreakfast} · {o.cancellationPolicy}
+                </p>
+                <table className="rows small">
+                  <tbody>
+                    <tr><td>{d.roomPrice} ({n} {n === 1 ? d.night : d.nights})</td><td>{formatChf(o.roomsTotalRappen)}</td></tr>
+                    <tr><td>{d.touristTax}</td><td>{o.touristTaxIncluded ? d.included : formatChf(o.touristTaxRappen)}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="price">
+                <div className="muted small">{d.total}</div>
+                <div className="big">{formatChf(o.totalRappen)}</div>
+              </div>
+              <details style={{ gridColumn: "1 / -1" }}>
+                <summary className="btn secondary">{d.choose}</summary>
+                <BookingForm
+                  locale={locale}
+                  hotelSlug={hotel.slug}
+                  roomTypeId={o.roomType.id}
+                  ratePlanId={o.ratePlan.id}
+                  checkin={q.checkin}
+                  checkout={q.checkout}
+                  adults={q.adults}
+                  children={q.children}
+                  ages={q.ages}
+                />
+              </details>
+            </article>
+          ))}
+        </>
+      );
+    }
+  }
+
+  return (
+    <Shell hotel={hotel} locale={locale} base={base} path={path}>
+      <div style={{ padding: "24px 0" }}>
+        <SearchBar action={`${base}/${locale}/book`} locale={locale} today={today} defaults={{ checkin: q?.checkin, checkout: q?.checkout, adults: q?.adults, children: q?.children, ages: q?.ages }} />
+      </div>
+      <section>{body}</section>
+    </Shell>
+  );
+}

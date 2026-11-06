@@ -1,0 +1,306 @@
+/**
+ * Drizzle-Abbild von db/migrations/*.sql (Quelle der Wahrheit bleibt SQL, SPEC 2).
+ * Bei Schemaänderungen: neue Datei in db/migrations/ UND diese Datei nachführen.
+ */
+import {
+  pgTable, uuid, text, char, integer, boolean, timestamp, time, date, jsonb, bigserial, primaryKey,
+} from "drizzle-orm/pg-core";
+
+const ts = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
+
+export const hotels = pgTable("hotels", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  legalName: text("legal_name"),
+  addressLine: text("address_line"),
+  postalCode: text("postal_code"),
+  city: text("city"),
+  canton: char("canton", { length: 2 }).notNull(),
+  municipality: text("municipality"),
+  primaryDomain: text("primary_domain").unique(),
+  currency: char("currency", { length: 3 }).notNull().default("CHF"),
+  timezone: text("timezone").notNull().default("Europe/Zurich"),
+  defaultLanguage: text("default_language").notNull().default("de"),
+  contactEmail: text("contact_email").notNull(),
+  contactPhone: text("contact_phone"),
+  platformFeeBps: integer("platform_fee_bps").notNull().default(100),
+  touristTaxIncludedInPrice: boolean("tourist_tax_included_in_price").notNull().default(false),
+  touristTaxCategory: text("tourist_tax_category").notNull().default("hotel"),
+  checkinTime: time("checkin_time").notNull().default("15:00"),
+  checkoutTime: time("checkout_time").notNull().default("11:00"),
+  stripeAccountId: text("stripe_account_id").unique(),
+  stripeChargesEnabled: boolean("stripe_charges_enabled").notNull().default(false),
+  stripeTwintActive: boolean("stripe_twint_active").notNull().default(false),
+  channexPropertyId: uuid("channex_property_id").unique(),
+  channexEnabled: boolean("channex_enabled").notNull().default(false),
+  status: text("status").notNull().default("draft"),
+  content: jsonb("content").$type<HotelContent>().notNull().default({}),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
+});
+
+export type HotelContent = {
+  de?: { headline?: string; intro?: string };
+  en?: { headline?: string; intro?: string };
+  photos?: { url: string; alt?: string }[];
+};
+
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  isPlatformAdmin: boolean("is_platform_admin").notNull().default(false),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const hotelMembers = pgTable(
+  "hotel_members",
+  {
+    hotelId: uuid("hotel_id").notNull().references(() => hotels.id),
+    userId: uuid("user_id").notNull().references(() => users.id),
+    role: text("role").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.hotelId, t.userId] })],
+);
+
+export const hotelModules = pgTable(
+  "hotel_modules",
+  {
+    hotelId: uuid("hotel_id").notNull(),
+    module: text("module").notNull(),
+    enabled: boolean("enabled").notNull().default(false),
+    settings: jsonb("settings").notNull().default({}),
+  },
+  (t) => [primaryKey({ columns: [t.hotelId, t.module] })],
+);
+
+export const loginTokens = pgTable("login_tokens", {
+  tokenHash: text("token_hash").primaryKey(),
+  userId: uuid("user_id").notNull(),
+  expiresAt: ts("expires_at").notNull(),
+  usedAt: ts("used_at"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const roomTypes = pgTable("room_types", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  hotelId: uuid("hotel_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  maxAdults: integer("max_adults").notNull(),
+  maxChildren: integer("max_children").notNull().default(0),
+  maxOccupancy: integer("max_occupancy").notNull(),
+  roomCount: integer("room_count").notNull(),
+  photos: jsonb("photos").$type<{ url: string; alt?: string }[]>().notNull().default([]),
+  sortOrder: integer("sort_order").notNull().default(0),
+  channexRoomTypeId: uuid("channex_room_type_id").unique(),
+  active: boolean("active").notNull().default(true),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const ratePlans = pgTable("rate_plans", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  hotelId: uuid("hotel_id").notNull(),
+  roomTypeId: uuid("room_type_id").notNull(),
+  name: text("name").notNull(),
+  breakfastIncluded: boolean("breakfast_included").notNull().default(true),
+  freeCancelHours: integer("free_cancel_hours"),
+  cancelFeeBps: integer("cancel_fee_bps").notNull().default(10000),
+  baseOccupancy: integer("base_occupancy").notNull().default(2),
+  extraAdultRappen: integer("extra_adult_rappen").notNull().default(0),
+  singleDiscountRappen: integer("single_discount_rappen").notNull().default(0),
+  channexRatePlanId: uuid("channex_rate_plan_id").unique(),
+  active: boolean("active").notNull().default(true),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const inventoryDays = pgTable(
+  "inventory_days",
+  {
+    hotelId: uuid("hotel_id").notNull(),
+    roomTypeId: uuid("room_type_id").notNull(),
+    night: date("night", { mode: "string" }).notNull(),
+    total: integer("total").notNull(),
+    booked: integer("booked").notNull().default(0),
+    blocked: integer("blocked").notNull().default(0),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.roomTypeId, t.night] })],
+);
+
+export const ratesDays = pgTable(
+  "rates_days",
+  {
+    hotelId: uuid("hotel_id").notNull(),
+    ratePlanId: uuid("rate_plan_id").notNull(),
+    night: date("night", { mode: "string" }).notNull(),
+    priceRappen: integer("price_rappen").notNull(),
+    minStayArrival: integer("min_stay_arrival").notNull().default(1),
+    maxStay: integer("max_stay"),
+    closedToArrival: boolean("closed_to_arrival").notNull().default(false),
+    closedToDeparture: boolean("closed_to_departure").notNull().default(false),
+    stopSell: boolean("stop_sell").notNull().default(false),
+    updatedAt: ts("updated_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.ratePlanId, t.night] })],
+);
+
+export const guests = pgTable("guests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  hotelId: uuid("hotel_id").notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  language: text("language").notNull().default("de"),
+  marketingConsent: boolean("marketing_consent").notNull().default(false),
+  marketingConsentAt: ts("marketing_consent_at"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const bookings = pgTable("bookings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  hotelId: uuid("hotel_id").notNull(),
+  reference: text("reference").notNull().unique(),
+  publicToken: text("public_token").notNull().unique(),
+  source: text("source").notNull(),
+  status: text("status").notNull(),
+  checkin: date("checkin", { mode: "string" }).notNull(),
+  checkout: date("checkout", { mode: "string" }).notNull(),
+  adults: integer("adults").notNull(),
+  children: integer("children").notNull().default(0),
+  childrenAges: jsonb("children_ages").$type<number[]>().notNull().default([]),
+  language: text("language").notNull().default("de"),
+  guestId: uuid("guest_id"),
+  roomsTotalRappen: integer("rooms_total_rappen").notNull().default(0),
+  touristTaxRappen: integer("tourist_tax_rappen").notNull().default(0),
+  totalRappen: integer("total_rappen").notNull().default(0),
+  platformFeeRappen: integer("platform_fee_rappen").notNull().default(0),
+  holdExpiresAt: ts("hold_expires_at"),
+  confirmedAt: ts("confirmed_at"),
+  cancelledAt: ts("cancelled_at"),
+  cancelReason: text("cancel_reason"),
+  channexBookingId: uuid("channex_booking_id").unique(),
+  otaReservationCode: text("ota_reservation_code"),
+  guestNotes: text("guest_notes"),
+  overbooked: boolean("overbooked").notNull().default(false),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
+});
+
+export type NightlyPrice = { night: string; price_rappen: number };
+
+export const bookingRooms = pgTable("booking_rooms", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  bookingId: uuid("booking_id").notNull(),
+  hotelId: uuid("hotel_id").notNull(),
+  roomTypeId: uuid("room_type_id").notNull(),
+  ratePlanId: uuid("rate_plan_id"),
+  adults: integer("adults").notNull(),
+  children: integer("children").notNull().default(0),
+  nightlyPrices: jsonb("nightly_prices").$type<NightlyPrice[]>().notNull(),
+  amountRappen: integer("amount_rappen").notNull(),
+});
+
+export const payments = pgTable("payments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  hotelId: uuid("hotel_id").notNull(),
+  bookingId: uuid("booking_id").notNull(),
+  stripeCheckoutSessionId: text("stripe_checkout_session_id").unique(),
+  stripePaymentIntentId: text("stripe_payment_intent_id").unique(),
+  method: text("method"),
+  amountRappen: integer("amount_rappen").notNull(),
+  applicationFeeRappen: integer("application_fee_rappen").notNull().default(0),
+  refundedRappen: integer("refunded_rappen").notNull().default(0),
+  status: text("status").notNull(),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
+});
+
+export const inboundEvents = pgTable(
+  "inbound_events",
+  {
+    source: text("source").notNull(),
+    eventId: text("event_id").notNull(),
+    type: text("type").notNull(),
+    payload: jsonb("payload").notNull(),
+    receivedAt: ts("received_at").notNull().defaultNow(),
+    processedAt: ts("processed_at"),
+    error: text("error"),
+  },
+  (t) => [primaryKey({ columns: [t.source, t.eventId] })],
+);
+
+export const channexOutbox = pgTable("channex_outbox", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  hotelId: uuid("hotel_id").notNull(),
+  kind: text("kind").notNull(),
+  roomTypeId: uuid("room_type_id"),
+  ratePlanId: uuid("rate_plan_id"),
+  dateFrom: date("date_from", { mode: "string" }).notNull(),
+  dateTo: date("date_to", { mode: "string" }).notNull(),
+  status: text("status").notNull().default("pending"),
+  attempts: integer("attempts").notNull().default(0),
+  nextAttemptAt: ts("next_attempt_at").notNull().defaultNow(),
+  lastError: text("last_error"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  sentAt: ts("sent_at"),
+});
+
+export const emailOutbox = pgTable("email_outbox", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  hotelId: uuid("hotel_id"),
+  bookingId: uuid("booking_id"),
+  template: text("template").notNull(),
+  toEmail: text("to_email").notNull(),
+  language: text("language").notNull().default("de"),
+  data: jsonb("data").$type<Record<string, unknown>>().notNull().default({}),
+  sendAfter: ts("send_after").notNull().defaultNow(),
+  status: text("status").notNull().default("pending"),
+  attempts: integer("attempts").notNull().default(0),
+  sentAt: ts("sent_at"),
+});
+
+export const auditLog = pgTable("audit_log", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  hotelId: uuid("hotel_id"),
+  actor: text("actor").notNull(),
+  action: text("action").notNull(),
+  entity: text("entity"),
+  entityId: text("entity_id"),
+  details: jsonb("details").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+export const touristTaxRules = pgTable("tourist_tax_rules", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  canton: char("canton", { length: 2 }).notNull(),
+  municipality: text("municipality").notNull(),
+  validFrom: date("valid_from", { mode: "string" }).notNull(),
+  category: text("category").notNull().default("hotel"),
+  adultRappen: integer("adult_rappen"),
+  reducedRappen: integer("reduced_rappen"),
+  freeUnderAge: integer("free_under_age").notNull().default(0),
+  reducedUnderAge: integer("reduced_under_age"),
+  reportingSystem: text("reporting_system"),
+  status: text("status").notNull(),
+  notes: text("notes"),
+  sourceUrl: text("source_url"),
+  checkedAt: date("checked_at", { mode: "string" }).notNull(),
+});
+
+export const cantonRules = pgTable("canton_rules", {
+  canton: char("canton", { length: 2 }).primaryKey(),
+  retentionYears: integer("retention_years"),
+  signatureRequired: boolean("signature_required").notNull().default(false),
+  onlineReporting: text("online_reporting").notNull().default("none"),
+  notes: text("notes"),
+  sourceUrl: text("source_url"),
+});
+
+export type Hotel = typeof hotels.$inferSelect;
+export type RoomType = typeof roomTypes.$inferSelect;
+export type RatePlan = typeof ratePlans.$inferSelect;
+export type Booking = typeof bookings.$inferSelect;
+export type TouristTaxRule = typeof touristTaxRules.$inferSelect;

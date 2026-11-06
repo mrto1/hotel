@@ -1,0 +1,122 @@
+import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
+import { db, type Executor } from "../db/client";
+import { inventoryDays, ratePlans, ratesDays, roomTypes, type Hotel, type RatePlan, type RoomType } from "../db/schema";
+import { addDays, nightsOf, todayIn, type Day } from "../domain/dates";
+import { evaluateOffer, validateStay, type Rejection, type StayQuery } from "../domain/availability";
+import { grandTotal, priceStay, type NightlyPrice } from "../domain/pricing";
+import { computeTouristTax, needsChildAges, TouristTaxUnconfirmedError } from "../domain/tourist-tax";
+import { cancellationPolicyText } from "../domain/cancellation";
+import { taxRuleFor } from "./hotels";
+
+export type SearchInput = StayQuery & { childrenAges?: (number | null)[] };
+
+export type Offer = {
+  roomType: Pick<RoomType, "id" | "name" | "description" | "photos" | "maxOccupancy">;
+  ratePlan: Pick<RatePlan, "id" | "name" | "breakfastIncluded" | "freeCancelHours" | "cancelFeeBps">;
+  nightlyPrices: NightlyPrice[];
+  roomsTotalRappen: number;
+  touristTaxRappen: number;
+  touristTaxIncluded: boolean;
+  totalRappen: number;
+  cancellationPolicy: string;
+};
+
+export type SearchResult =
+  | { ok: true; offers: Offer[]; rejected: { roomTypeId: string; ratePlanId: string; reason: Rejection }[]; needsChildAges: boolean }
+  | { ok: false; error: Rejection | "tourist_tax_unconfirmed" | "child_ages_required" };
+
+/**
+ * SPEC 5.1 + 5.2. Preise werden immer hier (serverseitig) berechnet.
+ * Optional auf einen Zimmertyp/Rateplan eingeschränkt (für die Buchung).
+ */
+export async function searchOffers(
+  hotel: Hotel,
+  input: SearchInput,
+  opts: { lang?: "de" | "en"; roomTypeId?: string; ratePlanId?: string; now?: Date; ex?: Executor } = {},
+): Promise<SearchResult> {
+  const ex = opts.ex ?? db();
+  const lang = opts.lang ?? "de";
+  const today = todayIn(hotel.timezone, opts.now);
+  const invalid = validateStay(input, today);
+  if (invalid) return { ok: false, error: invalid };
+
+  const rule = await taxRuleFor(hotel, input.checkin, ex);
+  const ageRequired = needsChildAges(rule);
+  const ages: (number | null)[] = Array.from({ length: input.children }, (_, i) => input.childrenAges?.[i] ?? null);
+  if (ageRequired && input.children > 0 && ages.some((a) => a === null)) {
+    return { ok: false, error: "child_ages_required" };
+  }
+  const nights = nightsOf(input.checkin, input.checkout);
+  let touristTax: number;
+  try {
+    touristTax = computeTouristTax(rule, { adults: input.adults, childrenAges: ages, nights: nights.length });
+  } catch (e) {
+    if (e instanceof TouristTaxUnconfirmedError) return { ok: false, error: "tourist_tax_unconfirmed" };
+    throw e;
+  }
+
+  const rtWhere = [eq(roomTypes.hotelId, hotel.id), eq(roomTypes.active, true)];
+  if (opts.roomTypeId) rtWhere.push(eq(roomTypes.id, opts.roomTypeId));
+  const rts = await ex.select().from(roomTypes).where(and(...rtWhere)).orderBy(asc(roomTypes.sortOrder), asc(roomTypes.name));
+  if (rts.length === 0) return { ok: true, offers: [], rejected: [], needsChildAges: ageRequired };
+
+  const rpWhere = [eq(ratePlans.hotelId, hotel.id), eq(ratePlans.active, true), inArray(ratePlans.roomTypeId, rts.map((r) => r.id))];
+  if (opts.ratePlanId) rpWhere.push(eq(ratePlans.id, opts.ratePlanId));
+  const rps = await ex.select().from(ratePlans).where(and(...rpWhere)).orderBy(asc(ratePlans.createdAt));
+
+  const inv = await ex
+    .select()
+    .from(inventoryDays)
+    .where(
+      and(
+        eq(inventoryDays.hotelId, hotel.id),
+        inArray(inventoryDays.roomTypeId, rts.map((r) => r.id)),
+        gte(inventoryDays.night, input.checkin),
+        lte(inventoryDays.night, addDays(input.checkout, -1)),
+      ),
+    );
+  const rates = rps.length
+    ? await ex
+        .select()
+        .from(ratesDays)
+        .where(
+          and(
+            eq(ratesDays.hotelId, hotel.id),
+            inArray(ratesDays.ratePlanId, rps.map((r) => r.id)),
+            gte(ratesDays.night, input.checkin),
+            lte(ratesDays.night, input.checkout as Day),
+          ),
+        )
+    : [];
+
+  const offers: Offer[] = [];
+  const rejected: { roomTypeId: string; ratePlanId: string; reason: Rejection }[] = [];
+  for (const rt of rts) {
+    const rtInv = inv.filter((i) => i.roomTypeId === rt.id);
+    for (const rp of rps.filter((p) => p.roomTypeId === rt.id)) {
+      const res = evaluateOffer(input, rt, rtInv, rates.filter((r) => r.ratePlanId === rp.id));
+      if (!res.ok) {
+        rejected.push({ roomTypeId: rt.id, ratePlanId: rp.id, reason: res.reason });
+        continue;
+      }
+      const priced = priceStay(res.rates, rp, input.adults, input.children);
+      offers.push({
+        roomType: { id: rt.id, name: rt.name, description: rt.description, photos: rt.photos, maxOccupancy: rt.maxOccupancy },
+        ratePlan: {
+          id: rp.id,
+          name: rp.name,
+          breakfastIncluded: rp.breakfastIncluded,
+          freeCancelHours: rp.freeCancelHours,
+          cancelFeeBps: rp.cancelFeeBps,
+        },
+        nightlyPrices: priced.nightly,
+        roomsTotalRappen: priced.roomsTotalRappen,
+        touristTaxRappen: touristTax,
+        touristTaxIncluded: hotel.touristTaxIncludedInPrice,
+        totalRappen: grandTotal(priced.roomsTotalRappen, touristTax, hotel.touristTaxIncludedInPrice),
+        cancellationPolicy: cancellationPolicyText(rp, lang),
+      });
+    }
+  }
+  return { ok: true, offers, rejected, needsChildAges: ageRequired };
+}
