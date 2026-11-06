@@ -1,0 +1,117 @@
+import { env, requireEnv } from "../../env";
+
+/**
+ * Channex REST API v1 (SPEC 7). Basis-URL aus CHANNEX_BASE_URL, Header `user-api-key`.
+ * Doku: https://docs.channex.io/api-v.1-documentation/ari, …/bookings-collection, …/rate-limits
+ */
+
+export type FetchLike = (url: string, init: { method: string; headers: Record<string, string>; body?: string }) => Promise<{
+  status: number;
+  json: () => Promise<unknown>;
+  text: () => Promise<string>;
+}>;
+
+let fetchOverride: FetchLike | null = null;
+/** Für Tests: HTTP ersetzen */
+export function setChannexFetch(f: FetchLike | null) {
+  fetchOverride = f;
+}
+
+export class ChannexHttpError extends Error {
+  constructor(public status: number, public body: unknown, msg: string) {
+    super(msg);
+  }
+  /** 429 oder 5xx (oder Netzwerk) → später erneut versuchen */
+  get retryable() {
+    return this.status === 429 || this.status >= 500 || this.status === 0;
+  }
+}
+
+export type AvailabilityValue = { property_id: string; room_type_id: string; date_from: string; date_to: string; availability: number };
+export type RestrictionValue = {
+  property_id: string;
+  rate_plan_id: string;
+  date_from: string;
+  date_to: string;
+  rate?: string;
+  min_stay_arrival?: number;
+  max_stay?: number;
+  closed_to_arrival?: boolean;
+  closed_to_departure?: boolean;
+  stop_sell?: boolean;
+};
+
+export type AriResponse = { data?: unknown[]; meta?: { message?: string; warnings?: unknown[] } };
+
+export type BookingRevision = {
+  id: string;
+  property_id: string;
+  booking_id: string;
+  unique_id?: string | null;
+  system_id?: string | null;
+  ota_reservation_code?: string | null;
+  ota_name?: string | null;
+  status: "new" | "modified" | "cancelled";
+  rooms: {
+    amount?: string | null;
+    checkin_date: string;
+    checkout_date: string;
+    rate_plan_id: string | null;
+    room_type_id: string | null;
+    days?: Record<string, string> | null;
+    occupancy?: { adults?: number; children?: number; infants?: number; ages?: number[] } | null;
+  }[];
+  customer?: { name?: string | null; surname?: string | null; mail?: string | null; phone?: string | null; language?: string | null } | null;
+  occupancy?: { adults?: number; children?: number; infants?: number } | null;
+  arrival_date: string;
+  departure_date: string;
+  amount?: string | null;
+  currency?: string | null;
+  notes?: string | null;
+  inserted_at?: string | null;
+};
+
+async function call<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
+  const url = `${env().CHANNEX_BASE_URL.replace(/\/$/, "")}${path}`;
+  const f: FetchLike = fetchOverride ?? ((u, init) => fetch(u, init));
+  let res;
+  try {
+    res = await f(url, {
+      method,
+      headers: { "user-api-key": requireEnv("CHANNEX_API_KEY"), "content-type": "application/json", accept: "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch (e) {
+    throw new ChannexHttpError(0, null, `Channex nicht erreichbar: ${(e as Error).message}`);
+  }
+  const text = await res.text();
+  let json: unknown = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = text;
+  }
+  if (res.status < 200 || res.status >= 300) {
+    throw new ChannexHttpError(res.status, json, `Channex ${method} ${path} → HTTP ${res.status}: ${text.slice(0, 500)}`);
+  }
+  return json as T;
+}
+
+export const channex = {
+  postAvailability: (values: AvailabilityValue[]) => call<AriResponse>("POST", "/availability", { values }),
+  postRestrictions: (values: RestrictionValue[]) => call<AriResponse>("POST", "/restrictions", { values }),
+  /** Liefert nur nicht bestätigte Revisionen, älteste zuerst */
+  feed: (propertyId?: string) =>
+    call<{ data: { id: string; type: string; attributes: BookingRevision }[]; meta?: { total?: number } }>(
+      "GET",
+      `/booking_revisions/feed?order[inserted_at]=asc${propertyId ? `&filter[property_id]=${encodeURIComponent(propertyId)}` : ""}`,
+    ),
+  ack: (revisionId: string) => call<unknown>("POST", `/booking_revisions/${encodeURIComponent(revisionId)}/ack`),
+  createProperty: (p: Record<string, unknown>) => call<{ data: { id: string } }>("POST", "/properties", { property: p }),
+  createRoomType: (r: Record<string, unknown>) => call<{ data: { id: string } }>("POST", "/room_types", { room_type: r }),
+  createRatePlan: (r: Record<string, unknown>) => call<{ data: { id: string } }>("POST", "/rate_plans", { rate_plan: r }),
+};
+
+export function channexConfigured(): boolean {
+  return !!env().CHANNEX_API_KEY;
+}

@@ -91,6 +91,9 @@ export function render(template: string, lang: string, c: EmailContext): Rendere
       return wrap(c, l, de ? "Ihr Login-Link" : "Your login link",
         [de ? "Klicken Sie auf den Link, um sich anzumelden. Er ist 15 Minuten gültig und nur einmal verwendbar." : "Click the link to sign in. It is valid for 15 minutes and can be used once."],
         [], { href: String(c.data.link), label: de ? "Anmelden" : "Sign in" });
+    case "channex_alert":
+      return wrap(c, l, `[Channex] ${String(c.data.subject)}${c.data.hotel ? ` – ${c.data.hotel}` : ""}`,
+        [String(c.data.subject), String(c.data.details ?? "")]);
     default:
       throw new Error(`Unbekanntes Template ${template}`);
   }

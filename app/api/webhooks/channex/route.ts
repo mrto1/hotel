@@ -1,11 +1,12 @@
 import { verifyChannexSignature } from "@/src/integrations/channex/signature";
+import { triggerChannexFeed } from "@/src/jobs/queue";
 import { env } from "@/src/env";
 
 export const dynamic = "force-dynamic";
 
 /**
- * SPEC 7.3 – Grundgerüst. Verarbeitung der Buchungen (Feed + Ack) folgt in M3.
- * Schon jetzt: falsche Signatur → 401.
+ * SPEC 7.3: Signatur prüfen (roher Body), dann nur den Job channex-feed anstossen.
+ * Die Buchungen selbst kommen immer über den Feed (mit Ack).
  */
 export async function POST(req: Request) {
   const secret = env().CHANNEX_WEBHOOK_SECRET;
@@ -13,6 +14,11 @@ export async function POST(req: Request) {
   const raw = await req.text();
   const ok = verifyChannexSignature(raw, req.headers.get("x-hmac-signature-256"), req.headers.get("x-hmac-timestamp"), secret);
   if (!ok) return Response.json({ error: "invalid_signature" }, { status: 401 });
-  // TODO(M3): Job channex-feed anstossen (src/jobs), siehe SPEC 7.3
+  try {
+    await triggerChannexFeed();
+  } catch (e) {
+    // Kein Problem: channex-feed läuft ohnehin alle 2 Minuten
+    console.error("[channex webhook] Job konnte nicht angestossen werden", e);
+  }
   return Response.json({ received: true }, { status: 202 });
 }
