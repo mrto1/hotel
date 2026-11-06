@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { t, type Locale } from "@/src/i18n/dict";
 
 export function BookingForm(props: {
@@ -16,6 +16,9 @@ export function BookingForm(props: {
   const d = t(props.locale);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Absenden erst nach der Hydrierung (sonst würde der Browser die Daten per GET an die URL hängen)
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -68,7 +71,7 @@ export function BookingForm(props: {
       <label className="check" style={{ marginTop: 12 }}><input type="checkbox" name="marketing" />{d.marketing}</label>
       <label className="check"><input type="checkbox" name="terms" required />{d.terms}</label>
       {error ? <p className="notice warn" role="alert">{error}</p> : null}
-      <button className="btn" type="submit" disabled={busy} style={{ marginTop: 12 }}>{d.payNow}</button>
+      <button className="btn" type="submit" disabled={busy || !ready} style={{ marginTop: 12 }}>{d.payNow}</button>
       <p className="muted small">{d.payMethods}</p>
     </form>
   );

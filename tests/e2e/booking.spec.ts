@@ -24,6 +24,7 @@ test("Gast sucht, bucht und storniert (Fake-Zahlung)", async ({ page }) => {
   await offer.getByRole("button", { name: "Weiter zur Zahlung" }).click();
   await expect(page).toHaveURL(/\/b\/.+paid=1/);
   await expect(page.getByText("Ihre Buchung ist bestätigt")).toBeVisible();
+  await page.waitForLoadState("networkidle"); // Hydrierung abwarten
   await page.getByRole("button", { name: "Buchung stornieren" }).click();
   await expect(page.getByText("Bei Stornierung jetzt erhalten Sie zurück")).toBeVisible();
   await page.getByRole("button", { name: "Ja, verbindlich stornieren" }).click();
